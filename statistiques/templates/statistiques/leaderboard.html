@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Classement - CODM Tracker{% endblock %}
+{% block nav_leaderboard %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <div class="page-breadcrumb">
+            <a href="/">Accueil</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Classement</span>
+        </div>
+        <h1 class="page-title">Classement <span class="highlight">Mondial</span></h1>
+    </div>
+</div>
+
+<section style="padding: 40px 0 100px;">
+    <div class="container">
+        <div class="leaderboard-filters">
+            <button class="filter-btn active" data-filter="br" onclick="switchMode('br')">
+                <i class="fas fa-parachute-box"></i> Battle Royale
+            </button>
+            <button class="filter-btn" data-filter="mp" onclick="switchMode('mp')">
+                <i class="fas fa-crosshairs"></i> Multijoueur
+            </button>
+        </div>
+
+        <!-- Battle Royale Leaderboard -->
+        <div id="br-leaderboard" class="leaderboard-table-container">
+            <div class="section-header" style="text-align: left; margin-bottom: 30px;">
+                <h2><i class="fas fa-parachute-box" style="color: var(--primary-red); margin-right: 15px;"></i>Classement Battle Royale</h2>
+                <p class="section-desc">Top 100 joueurs en mode Battle Royale</p>
+            </div>
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rang</th>
+                        <th>Joueur</th>
+                        <th>K/D</th>
+                        <th>Victoires</th>
+                        <th>Top 10</th>
+                        <th>Parties</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in stats_br %}
+                    <tr>
+                        <td><span class="rank-badge {% if forloop.counter <= 3 %}rank-{{ forloop.counter }}{% endif %}">{{ forloop.counter }}</span></td>
+                        <td>
+                            <div class="player-cell">
+                                <div class="player-avatar-sm"><i class="fas fa-user"></i></div>
+                                <div>
+                                    <div style="font-weight: 600;">{{ stat.profil.utilisateur.nom }} {{ stat.profil.utilisateur.prenom }}</div>
+                                    <div style="font-size: 0.8rem; color: var(--gold);">{{ stat.profil.rang_br }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="color: var(--primary-red); font-weight: 600;">{{ stat.ratio_kd|floatformat:2 }}</td>
+                        <td style="color: var(--gold);">{{ stat.victoires }}</td>
+                        <td style="color: var(--primary-orange);">{{ stat.top10 }}</td>
+                        <td>{{ stat.matchs }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-grey);">Aucun classement disponible pour le moment.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Multijoueur Leaderboard -->
+        <div id="mp-leaderboard" class="leaderboard-table-container" style="display: none;">
+            <div class="section-header" style="text-align: left; margin-bottom: 30px;">
+                <h2><i class="fas fa-crosshairs" style="color: var(--primary-orange); margin-right: 15px;"></i>Classement Multijoueur</h2>
+                <p class="section-desc">Top 100 joueurs en mode Multijoueur</p>
+            </div>
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rang</th>
+                        <th>Joueur</th>
+                        <th>K/D</th>
+                        <th>Victoires</th>
+                        <th>Parties</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in stats_mj %}
+                    <tr>
+                        <td><span class="rank-badge {% if forloop.counter <= 3 %}rank-{{ forloop.counter }}{% endif %}">{{ forloop.counter }}</span></td>
+                        <td>
+                            <div class="player-cell">
+                                <div class="player-avatar-sm"><i class="fas fa-user"></i></div>
+                                <div>
+                                    <div style="font-weight: 600;">{{ stat.profil.utilisateur.nom }} {{ stat.profil.utilisateur.prenom }}</div>
+                                    <div style="font-size: 0.8rem; color: var(--gold);">{{ stat.profil.rang_mj }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="color: var(--primary-red); font-weight: 600;">{{ stat.ratio_kd|floatformat:2 }}</td>
+                        <td style="color: var(--gold);">{{ stat.victoires }}</td>
+                        <td>{{ stat.matchs }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-grey);">Aucun classement disponible pour le moment.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function switchMode(mode) {
+    // Retirer la classe active de tous les boutons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Ajouter la classe active au bouton sélectionné
+    document.querySelector(`[data-filter="${mode}"]`).classList.add('active');
+    
+    // Masquer tous les tableaux
+    document.getElementById('br-leaderboard').style.display = 'none';
+    document.getElementById('mp-leaderboard').style.display = 'none';
+    
+    // Afficher le tableau correspondant
+    if (mode === 'br') {
+        document.getElementById('br-leaderboard').style.display = 'block';
+    } else {
+        document.getElementById('mp-leaderboard').style.display = 'block';
+    }
+}
+</script>
+{% endblock %}

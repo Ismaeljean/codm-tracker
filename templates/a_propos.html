@@ -1,0 +1,505 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}À propos - CODM Tracker{% endblock %}
+{% block nav_apropos %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+.about-hero {
+    background: linear-gradient(135deg, rgba(255, 26, 26, 0.15) 0%, rgba(204, 0, 0, 0.15) 100%);
+    padding: 100px 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.about-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('{% static "images/pattern.svg" %}') repeat;
+    opacity: 0.05;
+    z-index: 0;
+}
+
+.about-hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+.about-hero h1 {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    font-family: var(--font-display);
+    background: var(--gradient-red);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.about-hero p {
+    font-size: 1.3rem;
+    color: var(--text-grey);
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.about-section {
+    padding: 80px 0;
+}
+
+.about-section:nth-child(even) {
+    background: rgba(255, 26, 26, 0.03);
+}
+
+.about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+}
+
+.about-image {
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    box-shadow: var(--glow-red);
+    border: 2px solid var(--primary-red);
+}
+
+.about-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.about-image:hover img {
+    transform: scale(1.1);
+}
+
+.about-content h2 {
+    font-size: 2.5rem;
+    margin-bottom: 25px;
+    font-family: var(--font-heading);
+    color: var(--text-white);
+}
+
+.about-content p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--text-grey);
+    margin-bottom: 20px;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-top: 60px;
+}
+
+.feature-card {
+    background: var(--gradient-card);
+    border-radius: var(--card-radius);
+    padding: 40px 30px;
+    text-align: center;
+    border: 1px solid var(--medium-grey);
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--glow-red);
+    border-color: var(--primary-red);
+}
+
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    background: var(--gradient-red);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+}
+
+.feature-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: var(--text-white);
+    font-family: var(--font-heading);
+}
+
+.feature-card p {
+    color: var(--text-grey);
+    line-height: 1.6;
+}
+
+.stats-section {
+    background: var(--gradient-card);
+    border-radius: var(--card-radius);
+    padding: 60px 40px;
+    margin: 60px 0;
+    border: 2px solid var(--primary-red);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 40px;
+    text-align: center;
+}
+
+.stat-item {
+    padding: 20px;
+}
+
+.stat-number {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--primary-red);
+    font-family: var(--font-display);
+    margin-bottom: 10px;
+}
+
+.stat-label {
+    font-size: 1.1rem;
+    color: var(--text-grey);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.team-section {
+    padding: 80px 0;
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+    margin-top: 50px;
+}
+
+.team-card {
+    background: var(--gradient-card);
+    border-radius: var(--card-radius);
+    padding: 30px;
+    text-align: center;
+    border: 1px solid var(--medium-grey);
+    transition: all 0.3s ease;
+}
+
+.team-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--glow-red);
+    border-color: var(--primary-red);
+}
+
+.team-avatar {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    border: 3px solid var(--primary-red);
+    overflow: hidden;
+    background: var(--gradient-red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: white;
+}
+
+.team-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.team-card h3 {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+    color: var(--text-white);
+    font-family: var(--font-heading);
+}
+
+.team-role {
+    color: var(--primary-orange);
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.team-bio {
+    color: var(--text-grey);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.cta-section {
+    background: var(--gradient-red);
+    border-radius: var(--card-radius);
+    padding: 60px 40px;
+    text-align: center;
+    margin: 60px 0;
+}
+
+.cta-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: white;
+    font-family: var(--font-heading);
+}
+
+.cta-section p {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 30px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 968px) {
+    .about-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+    
+    .about-hero h1 {
+        font-size: 2.5rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+    }
+    
+    .stats-section {
+        padding: 40px 20px;
+    }
+    
+    .stat-item {
+        padding: 15px;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+    
+    .stats-section {
+        padding: 30px 15px;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .stat-label {
+        font-size: 0.85rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="about-hero">
+    <div class="container">
+        <div class="about-hero-content">
+            <h1>À Propos de <span style="color: var(--text-white);">CODM Tracker</span></h1>
+            <p>La plateforme ultime pour les joueurs Call of Duty Mobile. Suivez vos statistiques, améliorez votre gameplay et rejoignez une communauté passionnée.</p>
+        </div>
+    </div>
+</div>
+
+<section class="about-section">
+    <div class="container">
+        <div class="about-grid">
+            <div class="about-image">
+                <img src="{% static 'images/codm-hero.jpg' %}" alt="Call of Duty Mobile" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div style="display: none; width: 100%; height: 400px; background: var(--gradient-red); align-items: center; justify-content: center; font-size: 4rem; color: rgba(255,255,255,0.3);">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+            </div>
+            <div class="about-content">
+                <h2>Notre <span class="highlight">Mission</span></h2>
+                <p>CODM Tracker est né de la passion pour Call of Duty Mobile. Notre mission est de fournir aux joueurs les outils nécessaires pour suivre leurs performances, analyser leurs statistiques et progresser dans leur gameplay.</p>
+                <p>Nous croyons que chaque joueur mérite d'avoir accès à des données précises et détaillées sur ses performances. C'est pourquoi nous avons créé une plateforme complète qui combine statistiques, classements, tournois et une boutique dédiée.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="about-section">
+    <div class="container">
+        <div class="stats-section">
+            <h2 style="text-align: center; margin-bottom: 40px; color: var(--text-white); font-family: var(--font-heading);">
+                CODM Tracker en <span class="highlight">Chiffres</span>
+            </h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">1000+</div>
+                    <div class="stat-label">Joueurs Actifs</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">50+</div>
+                    <div class="stat-label">Tournois Organisés</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">5000+</div>
+                    <div class="stat-label">Statistiques Suivies</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Support Disponible</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="about-section">
+    <div class="container">
+        <div style="text-align: center; margin-bottom: 60px;">
+            <h2>Nos <span class="highlight">Fonctionnalités</span></h2>
+            <p style="color: var(--text-grey); font-size: 1.1rem; max-width: 600px; margin: 20px auto;">
+                Découvrez toutes les fonctionnalités qui font de CODM Tracker la plateforme de référence pour les joueurs Call of Duty Mobile.
+            </p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Statistiques Détaillées</h3>
+                <p>Suivez vos performances en temps réel avec des statistiques précises et détaillées sur votre gameplay.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <h3>Tournois</h3>
+                <p>Participez à des tournois compétitifs et défiez d'autres joueurs pour gagner des prix et améliorer votre classement.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-medal"></i>
+                </div>
+                <h3>Classements</h3>
+                <p>Consultez les classements des tournois passés et actuels pour voir où vous vous situez dans la communauté.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <h3>Boutique</h3>
+                <p>Découvrez notre boutique avec des produits exclusifs et des équipements pour améliorer votre expérience de jeu.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-newspaper"></i>
+                </div>
+                <h3>Blog & Guides</h3>
+                <p>Accédez à des articles, guides et astuces pour améliorer votre gameplay et rester informé des dernières actualités.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3>Communauté</h3>
+                <p>Rejoignez une communauté active de joueurs passionnés et partagez vos expériences avec d'autres membres.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="about-section">
+    <div class="container">
+        <div class="about-grid">
+            <div class="about-content">
+                <h2>Notre <span class="highlight">Vision</span></h2>
+                <p>Nous aspirons à devenir la plateforme de référence pour tous les joueurs Call of Duty Mobile, en offrant des outils innovants et une expérience utilisateur exceptionnelle.</p>
+                <p>Notre objectif est de créer un écosystème complet où les joueurs peuvent non seulement suivre leurs performances, mais aussi participer à des événements, acheter des produits exclusifs et interagir avec une communauté dynamique.</p>
+                <p>Nous nous engageons à améliorer continuellement nos services et à écouter les retours de notre communauté pour offrir la meilleure expérience possible.</p>
+            </div>
+            <div class="about-image">
+                <img src="{% static 'images/community.jpg' %}" alt="Communauté CODM" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div style="display: none; width: 100%; height: 400px; background: var(--gradient-orange); align-items: center; justify-content: center; font-size: 4rem; color: rgba(255,255,255,0.3);">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="about-section team-section">
+    <div class="container">
+        <div style="text-align: center; margin-bottom: 60px;">
+            <h2>Notre <span class="highlight">Équipe</span></h2>
+            <p style="color: var(--text-grey); font-size: 1.1rem; max-width: 600px; margin: 20px auto;">
+                Rencontrez l'équipe passionnée derrière CODM Tracker
+            </p>
+        </div>
+        <div class="team-grid">
+            <div class="team-card">
+                <div class="team-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h3>Tarnagda Ismael</h3>
+                <div class="team-role">Fondateur & Développeur</div>
+                <p class="team-bio">Fondateur, développeur et créateur de CODM Tracker. Passionné par Call of Duty Mobile et le développement web, je me consacre à créer la meilleure plateforme pour la communauté CODM.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="about-section">
+    <div class="container">
+        <div class="cta-section">
+            <h2>Rejoignez la <span style="color: var(--primary-black);">Communauté</span></h2>
+            <p>Prêt à améliorer votre gameplay et à rejoindre une communauté passionnée ? Créez votre compte dès maintenant et commencez votre parcours vers l'excellence.</p>
+            <div class="cta-buttons">
+                {% if not user.is_authenticated %}
+                <a href="{% url 'utilisateurs:signup' %}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-user-plus"></i> Créer un Compte
+                </a>
+                <a href="{% url 'utilisateurs:login' %}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-sign-in-alt"></i> Se Connecter
+                </a>
+                {% else %}
+                <a href="{% url 'profils:profil' %}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-user"></i> Mon Profil
+                </a>
+                <a href="{% url 'tournois:tournaments' %}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-trophy"></i> Voir les Tournois
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

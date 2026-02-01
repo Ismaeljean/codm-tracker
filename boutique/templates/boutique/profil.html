@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mon Profil - Boutique CODM Tracker{% endblock %}
+{% block nav_boutique %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+.profil-container {
+    padding: 60px 0 100px;
+}
+
+.profil-header {
+    margin-bottom: 40px;
+}
+
+.profil-header h1 {
+    font-size: 2.5rem;
+    font-family: var(--font-display);
+}
+
+.profil-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.profil-card {
+    background: var(--gradient-card);
+    border-radius: var(--card-radius);
+    padding: 30px;
+    border: 1px solid var(--medium-grey);
+}
+
+.profil-card-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--primary-red);
+}
+
+.profil-card-header i {
+    font-size: 1.8rem;
+    color: var(--primary-red);
+}
+
+.profil-card-header h3 {
+    font-size: 1.5rem;
+    color: var(--text-white);
+    font-family: var(--font-heading);
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--medium-grey);
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: var(--text-grey);
+    font-weight: 600;
+}
+
+.info-value {
+    color: var(--text-white);
+    font-weight: 600;
+}
+
+.commandes-list {
+    margin-top: 20px;
+}
+
+.commande-item {
+    background: var(--dark-grey);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    margin-bottom: 15px;
+    border: 1px solid var(--medium-grey);
+    transition: all 0.3s ease;
+}
+
+.commande-item:hover {
+    border-color: var(--primary-red);
+    transform: translateX(5px);
+}
+
+.commande-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.commande-number {
+    font-family: monospace;
+    color: var(--primary-red);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.commande-date {
+    color: var(--text-grey);
+    font-size: 0.9rem;
+}
+
+.commande-details {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.commande-detail-item {
+    text-align: center;
+}
+
+.commande-detail-label {
+    font-size: 0.85rem;
+    color: var(--text-grey);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.commande-detail-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-white);
+    margin-top: 5px;
+}
+
+.empty-commandes {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-grey);
+}
+
+.empty-commandes i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    color: var(--text-dark);
+}
+
+@media (max-width: 968px) {
+    .profil-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .commande-details {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="profil-container">
+    <div class="container">
+        <div class="profil-header">
+            <h1>Mon <span class="highlight">Profil</span></h1>
+        </div>
+
+        <div class="profil-grid">
+            <!-- Informations personnelles -->
+            <div class="profil-card">
+                <div class="profil-card-header">
+                    <i class="fas fa-user-circle"></i>
+                    <h3>Mes informations</h3>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Nom</span>
+                    <span class="info-value">{{ user.nom }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Prénom</span>
+                    <span class="info-value">{{ user.prenom }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Email</span>
+                    <span class="info-value">{{ user.email }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Téléphone</span>
+                    <span class="info-value">{{ user.numero|default:"Non renseigné" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Date d'inscription</span>
+                    <span class="info-value">{{ user.date_joined|date:"d/m/Y" }}</span>
+                </div>
+            </div>
+
+            <!-- Commandes récentes -->
+            <div class="profil-card">
+                <div class="profil-card-header">
+                    <i class="fas fa-shopping-bag"></i>
+                    <h3>Mes commandes</h3>
+                </div>
+                <div class="commandes-list">
+                    {% if commandes_recentes %}
+                        {% for commande in commandes_recentes %}
+                        <div class="commande-item">
+                            <div class="commande-header">
+                                <span class="commande-number">{{ commande.numero_commande }}</span>
+                                <span class="commande-date">{{ commande.date_commande|date:"d/m/Y" }}</span>
+                            </div>
+                            <div class="commande-details">
+                                <div class="commande-detail-item">
+                                    <div class="commande-detail-label">Total</div>
+                                    <div class="commande-detail-value" style="color: var(--primary-orange);">
+                                        {{ commande.total_avec_livraison|floatformat:0 }} XOF
+                                    </div>
+                                </div>
+                                <div class="commande-detail-item">
+                                    <div class="commande-detail-label">Statut</div>
+                                    <div class="commande-detail-value">
+                                        <span class="status-badge 
+                                            {% if commande.statut == 'payee' %}status-payee
+                                            {% elif commande.statut == 'valide' %}status-valide
+                                            {% elif commande.statut == 'livre' %}status-livre
+                                            {% else %}status-default{% endif %}" style="font-size: 0.75rem;">
+                                            {{ commande.get_statut_display }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="commande-detail-item">
+                                    <div class="commande-detail-label">Mode</div>
+                                    <div class="commande-detail-value">{{ commande.mode_paiement|upper }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-commandes">
+                            <i class="fas fa-shopping-bag"></i>
+                            <p>Aucune commande pour le moment.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

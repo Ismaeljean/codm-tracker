@@ -1,0 +1,337 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Loadouts - CODM Tracker{% endblock %}
+{% block nav_loadouts %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <div class="page-breadcrumb">
+            <a href="/">Accueil</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Loadouts</span>
+        </div>
+        <h1 class="page-title">Armes & <span class="highlight">Sensibilités</span></h1>
+    </div>
+</div>
+
+<section style="padding: 40px 0 100px;">
+    <div class="container">
+        {% if error %}
+        <div style="text-align: center; padding: 40px;">
+            <p style="color: var(--primary-red); margin-bottom: 20px;">{{ error }}</p>
+            <a href="{% url 'profils:create_profil' %}" class="btn btn-primary">Créer mon profil</a>
+        </div>
+        {% elif equipements %}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+            <div class="section-header" style="text-align: left; margin: 0;">
+                <h2><i class="fas fa-crosshairs" style="color: var(--primary-red); margin-right: 15px;"></i>Mes Loadouts</h2>
+                <p class="section-desc">Configurations d'armes optimisées pour dominer vos adversaires</p>
+            </div>
+            <button class="btn btn-primary" onclick="openLoadoutModal()">
+                <i class="fas fa-plus"></i> Ajouter un Loadout
+            </button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px;">
+            {% for equipement in equipements %}
+            <div class="loadout-card">
+                <div class="loadout-header">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="loadout-title">{{ equipement.arme }}</div>
+                        <button class="btn btn-sm btn-secondary" onclick="deleteLoadout({{ equipement.id }})" style="padding: 5px 10px;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="loadout-body">
+                    <div style="text-align: center; padding: 20px; background: var(--dark-grey); border-radius: var(--border-radius); margin-bottom: 20px;">
+                        <div style="font-size: 3rem; margin-bottom: 10px;">🔫</div>
+                        <div style="font-family: var(--font-display); font-size: 1.25rem;">{{ equipement.arme }}</div>
+                    </div>
+                    {% if equipement.accessoires %}
+                    <div class="loadout-item">
+                        <span class="loadout-label">Accessoires</span>
+                        <div class="loadout-value">
+                            {% for key, value in equipement.accessoires.items %}
+                                {% if value %}
+                                <div style="margin-bottom: 8px;">
+                                    <strong>{{ key|capfirst }}:</strong> {{ value }}
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if equipement.sensibilite %}
+                    <div class="loadout-item">
+                        <span class="loadout-label">Sensibilités</span>
+                        <div class="loadout-value">
+                            {% for key, value in equipement.sensibilite.items %}
+                                {% if value %}
+                                <div style="margin-bottom: 8px;">
+                                    <strong>{{ key|capfirst }}:</strong> {{ value }}
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if equipement.sensibilite %}
+                    <div class="loadout-item">
+                        <span class="loadout-label">Sensibilité</span>
+                        <span class="loadout-value">{{ equipement.sensibilite|safe }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 60px 20px;">
+            <h2 style="margin-bottom: 20px;">Aucun loadout enregistré</h2>
+            <p style="color: var(--text-grey); margin-bottom: 30px;">Créez votre premier loadout pour commencer.</p>
+            <button class="btn btn-primary" onclick="openLoadoutModal()">
+                <i class="fas fa-plus"></i> Créer un loadout
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Modal pour ajouter un loadout -->
+{% if user.is_authenticated and profil %}
+<div id="loadoutModal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 700px;">
+        <div class="modal-header">
+            <h2>Ajouter un Loadout</h2>
+            <span class="close" onclick="closeLoadoutModal()">&times;</span>
+        </div>
+        <form id="loadoutForm" onsubmit="submitLoadout(event)">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label" for="arme">Nom de l'Arme</label>
+                <input type="text" id="arme" name="arme" class="form-input" placeholder="Ex: CBR4, MAC-10, DL Q33" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="canon">Canon</label>
+                <input type="text" id="canon" name="canon" class="form-input" placeholder="Ex: MIP Light Barrel">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="crosse">Crosse</label>
+                <input type="text" id="crosse" name="crosse" class="form-input" placeholder="Ex: No Stock">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="laser">Laser</label>
+                <input type="text" id="laser" name="laser" class="form-input" placeholder="Ex: OWC Laser - Tactical">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="chargeur">Chargeur</label>
+                <input type="text" id="chargeur" name="chargeur" class="form-input" placeholder="Ex: 40 Balles Extended">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="poignee">Poignée</label>
+                <input type="text" id="poignee" name="poignee" class="form-input" placeholder="Ex: Granulated Grip Tape">
+            </div>
+            
+            <div style="border-top: 1px solid var(--medium-grey); margin: 20px 0; padding-top: 20px;">
+                <h3 style="color: var(--text-white); margin-bottom: 15px;">Sensibilités</h3>
+                
+                <div class="form-group">
+                    <label class="form-label" for="sens_camera">Caméra (sans viseur)</label>
+                    <input type="number" id="sens_camera" name="sens_camera" class="form-input" placeholder="Ex: 75" min="0" max="300">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="sens_red_dot">Red Dot</label>
+                    <input type="number" id="sens_red_dot" name="sens_red_dot" class="form-input" placeholder="Ex: 65" min="0" max="300">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="sens_ads">ADS</label>
+                    <input type="number" id="sens_ads" name="sens_ads" class="form-input" placeholder="Ex: 85" min="0" max="300">
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                    <i class="fas fa-save"></i> Enregistrer
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeLoadoutModal()" style="flex: 1;">
+                    Annuler
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+{% if user.is_authenticated and profil %}
+function openLoadoutModal() {
+    document.getElementById('loadoutModal').style.display = 'block';
+}
+
+function closeLoadoutModal() {
+    document.getElementById('loadoutModal').style.display = 'none';
+    document.getElementById('loadoutForm').reset();
+}
+
+function submitLoadout(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    // Construire l'objet accessoires
+    const accessoires = {
+        canon: formData.get('canon') || '',
+        crosse: formData.get('crosse') || '',
+        laser: formData.get('laser') || '',
+        chargeur: formData.get('chargeur') || '',
+        poignee: formData.get('poignee') || ''
+    };
+    
+    // Construire l'objet sensibilité
+    const sensibilite = {
+        camera: formData.get('sens_camera') || '',
+        red_dot: formData.get('sens_red_dot') || '',
+        ads: formData.get('sens_ads') || ''
+    };
+    
+    // Créer un nouveau FormData avec les données formatées
+    const submitData = new FormData();
+    submitData.append('csrfmiddlewaretoken', formData.get('csrfmiddlewaretoken'));
+    submitData.append('arme', formData.get('arme'));
+    submitData.append('accessoires', JSON.stringify(accessoires));
+    submitData.append('sensibilite', JSON.stringify(sensibilite));
+    
+    fetch('{% url "equipements:add_loadout" %}', {
+        method: 'POST',
+        body: submitData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Erreur: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Une erreur est survenue');
+    });
+}
+
+function deleteLoadout(loadoutId) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce loadout ?')) {
+        return;
+    }
+    
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                      document.querySelector('input[name="csrfmiddlewaretoken"]')?.value ||
+                      '{{ csrf_token }}';
+    
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', csrfToken);
+    
+    fetch(`{% url "equipements:delete_loadout" 0 %}`.replace('0', loadoutId), {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': csrfToken
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Erreur: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Une erreur est survenue');
+    });
+}
+
+// Fermer le modal en cliquant en dehors
+window.onclick = function(event) {
+    const modal = document.getElementById('loadoutModal');
+    if (event.target == modal) {
+        closeLoadoutModal();
+    }
+}
+{% endif %}
+</script>
+
+<style>
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.7);
+}
+
+.modal-content {
+    background-color: var(--primary-black);
+    margin: 3% auto;
+    padding: 0;
+    border: 1px solid var(--medium-grey);
+    border-radius: var(--card-radius);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    padding: 20px 30px;
+    border-bottom: 1px solid var(--medium-grey);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    background: var(--primary-black);
+    z-index: 10;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: var(--text-white);
+}
+
+.close {
+    color: var(--text-grey);
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: var(--text-white);
+}
+
+#loadoutForm {
+    padding: 30px;
+}
+</style>
+{% endblock %}

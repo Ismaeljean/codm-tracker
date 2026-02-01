@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Statistiques - CODM Tracker{% endblock %}
+{% block nav_stats %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <div class="page-breadcrumb">
+            <a href="/">Accueil</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Statistiques</span>
+        </div>
+        <h1 class="page-title">Mes <span class="highlight">Statistiques</span></h1>
+    </div>
+</div>
+
+<section style="padding: 40px 0 100px;">
+    <div class="container">
+        {% if user.is_authenticated and profil %}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <div class="stats-tabs">
+                <button class="stats-tab active" data-tab="br">
+                    <i class="fas fa-parachute-box"></i> Battle Royale
+                </button>
+                <button class="stats-tab" data-tab="mp">
+                    <i class="fas fa-crosshairs"></i> Multijoueur
+                </button>
+            </div>
+            <button class="btn btn-primary" onclick="openStatsModal('br')" id="addBrBtn" style="display: none;">
+                <i class="fas fa-plus"></i> Ajouter Stats BR
+            </button>
+            <button class="btn btn-primary" onclick="openStatsModal('mp')" id="addMpBtn" style="display: none;">
+                <i class="fas fa-plus"></i> Ajouter Stats MJ
+            </button>
+        </div>
+
+        <div id="br-stats">
+            <div class="section-header" style="text-align: left; margin-bottom: 30px;">
+                <h2><i class="fas fa-parachute-box" style="color: var(--primary-red); margin-right: 15px;"></i>Battle Royale</h2>
+                <p class="section-desc">Vos statistiques en mode Battle Royale</p>
+            </div>
+
+            {% for stat in stats %}
+                {% if stat.mode == 'BR' %}
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">{{ stat.ratio_kd|floatformat:2 }}</div>
+                        <div class="stat-label">K/D Ratio</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: var(--gold);">{{ stat.victoires }}</div>
+                        <div class="stat-label">Victoires</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: var(--primary-orange);">{{ stat.top10 }}</div>
+                        <div class="stat-label">Top 10</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ stat.matchs }}</div>
+                        <div class="stat-label">Parties Jouées</div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="openStatsModal('br', {{ stat.id }})">
+                        <i class="fas fa-edit"></i> Modifier
+                    </button>
+                </div>
+                {% endif %}
+            {% empty %}
+                <p style="text-align: center; color: var(--text-grey); padding: 40px;">Aucune statistique disponible pour le moment.</p>
+                <div style="text-align: center;">
+                    <button class="btn btn-primary" onclick="openStatsModal('br')">
+                        <i class="fas fa-plus"></i> Ajouter mes Statistiques BR
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div id="mp-stats" style="display: none;">
+            <div class="section-header" style="text-align: left; margin-bottom: 30px;">
+                <h2><i class="fas fa-crosshairs" style="color: var(--primary-orange); margin-right: 15px;"></i>Multijoueur</h2>
+                <p class="section-desc">Vos statistiques en mode Multijoueur</p>
+            </div>
+
+            {% for stat in stats %}
+                {% if stat.mode == 'MJ' %}
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: var(--primary-red);">{{ stat.ratio_kd|floatformat:2 }}</div>
+                        <div class="stat-label">K/D Ratio</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: var(--gold);">{{ stat.victoires }}</div>
+                        <div class="stat-label">Victoires</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ stat.matchs }}</div>
+                        <div class="stat-label">Parties Jouées</div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="openStatsModal('mp', {{ stat.id }})">
+                        <i class="fas fa-edit"></i> Modifier
+                    </button>
+                </div>
+                {% endif %}
+            {% empty %}
+                <p style="text-align: center; color: var(--text-grey); padding: 40px;">Aucune statistique disponible pour le moment.</p>
+                <div style="text-align: center;">
+                    <button class="btn btn-primary" onclick="openStatsModal('mp')">
+                        <i class="fas fa-plus"></i> Ajouter mes Statistiques MJ
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 60px 20px;">
+            <h2 style="margin-bottom: 20px;">Connectez-vous pour voir vos statistiques</h2>
+            <p style="color: var(--text-grey); margin-bottom: 30px;">Créez un compte ou connectez-vous pour suivre vos performances.</p>
+            <a href="{% url 'utilisateurs:login' %}" class="btn btn-primary">Se connecter</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Modal pour ajouter/modifier des statistiques -->
+{% if user.is_authenticated and profil %}
+<div id="statsModal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h2 id="modalStatsTitle">Ajouter des Statistiques</h2>
+            <span class="close" onclick="closeStatsModal()">&times;</span>
+        </div>
+        <form id="statsForm" onsubmit="submitStats(event)">
+            {% csrf_token %}
+            <input type="hidden" id="statsMode" name="mode">
+            
+            <div class="form-group">
+                <label class="form-label" for="ratio_kd">Ratio K/D</label>
+                <input type="number" id="ratio_kd" name="ratio_kd" class="form-input" step="0.01" min="0" placeholder="Ex: 2.5" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="victoires">Nombre de Victoires</label>
+                <input type="number" id="victoires" name="victoires" class="form-input" min="0" placeholder="Ex: 150" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="matchs">Nombre de Parties</label>
+                <input type="number" id="matchs" name="matchs" class="form-input" min="0" placeholder="Ex: 500" required>
+            </div>
+            
+            <div class="form-group" id="top10Group" style="display: none;">
+                <label class="form-label" for="top10">Top 10 (Battle Royale)</label>
+                <input type="number" id="top10" name="top10" class="form-input" min="0" placeholder="Ex: 120" value="0">
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                    <i class="fas fa-save"></i> Enregistrer
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeStatsModal()" style="flex: 1;">
+                    Annuler
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.stats-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+        const tabType = this.dataset.tab;
+        document.querySelectorAll('.stats-tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById('br-stats').style.display = tabType === 'br' ? 'block' : 'none';
+        document.getElementById('mp-stats').style.display = tabType === 'mp' ? 'block' : 'none';
+        
+        // Afficher le bon bouton d'ajout
+        document.getElementById('addBrBtn').style.display = tabType === 'br' ? 'block' : 'none';
+        document.getElementById('addMpBtn').style.display = tabType === 'mp' ? 'block' : 'none';
+    });
+});
+
+{% if user.is_authenticated and profil %}
+function openStatsModal(mode, statId = null) {
+    const modal = document.getElementById('statsModal');
+    const form = document.getElementById('statsForm');
+    const title = document.getElementById('modalStatsTitle');
+    const modeInput = document.getElementById('statsMode');
+    const top10Group = document.getElementById('top10Group');
+    
+    modeInput.value = mode === 'br' ? 'BR' : 'MJ';
+    title.textContent = statId ? 'Modifier les Statistiques' : 'Ajouter des Statistiques';
+    
+    // Afficher Top 10 uniquement pour Battle Royale
+    top10Group.style.display = mode === 'br' ? 'block' : 'none';
+    
+    // Réinitialiser le formulaire
+    form.reset();
+    
+    modal.style.display = 'block';
+}
+
+function closeStatsModal() {
+    document.getElementById('statsModal').style.display = 'none';
+}
+
+function submitStats(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    fetch('{% url "statistiques:add_stats" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Erreur: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Une erreur est survenue');
+    });
+}
+
+// Fermer le modal en cliquant en dehors
+window.onclick = function(event) {
+    const modal = document.getElementById('statsModal');
+    if (event.target == modal) {
+        closeStatsModal();
+    }
+}
+{% endif %}
+</script>
+
+<style>
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.7);
+}
+
+.modal-content {
+    background-color: var(--primary-black);
+    margin: 5% auto;
+    padding: 0;
+    border: 1px solid var(--medium-grey);
+    border-radius: var(--card-radius);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+.modal-header {
+    padding: 20px 30px;
+    border-bottom: 1px solid var(--medium-grey);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: var(--text-white);
+}
+
+.close {
+    color: var(--text-grey);
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: var(--text-white);
+}
+
+#statsForm {
+    padding: 30px;
+}
+</style>
+{% endblock %}

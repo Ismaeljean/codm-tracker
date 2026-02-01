@@ -1,0 +1,556 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Classements - CODM Tracker{% endblock %}
+{% block nav_classements %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+.classements-hero {
+    background: linear-gradient(135deg, rgba(255, 26, 26, 0.1) 0%, rgba(204, 0, 0, 0.1) 100%);
+    padding: 80px 0;
+    text-align: center;
+    border-bottom: 2px solid var(--primary-red);
+}
+
+.classements-hero h1 {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    font-family: var(--font-display);
+}
+
+.classements-hero p {
+    font-size: 1.2rem;
+    color: var(--text-grey);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.classements-container {
+    padding: 60px 0 100px;
+}
+
+.tournoi-card {
+    background: var(--gradient-card);
+    border-radius: var(--card-radius);
+    padding: 30px;
+    margin-bottom: 30px;
+    border: 1px solid var(--medium-grey);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.tournoi-card:hover {
+    border-color: var(--primary-red);
+    box-shadow: var(--glow-red);
+    transform: translateY(-5px);
+}
+
+.tournoi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    gap: 20px;
+}
+
+.tournoi-image {
+    width: 120px;
+    height: 120px;
+    border-radius: var(--border-radius);
+    object-fit: cover;
+    border: 2px solid var(--primary-red);
+}
+
+.tournoi-image-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: var(--border-radius);
+    background: linear-gradient(135deg, var(--primary-red) 0%, var(--dark-red) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: rgba(255, 255, 255, 0.3);
+    border: 2px solid var(--primary-red);
+}
+
+.tournoi-info {
+    flex-grow: 1;
+}
+
+.tournoi-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--text-white);
+    font-family: var(--font-heading);
+}
+
+.tournoi-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    color: var(--text-grey);
+}
+
+.tournoi-meta span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tournoi-meta i {
+    color: var(--primary-red);
+}
+
+.tournoi-status {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-en-cours {
+    background: var(--gradient-orange);
+    color: white;
+}
+
+.status-termine {
+    background: var(--gradient-red);
+    color: white;
+}
+
+.tournoi-stats {
+    display: flex;
+    gap: 30px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--medium-grey);
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary-red);
+    font-family: var(--font-display);
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--text-grey);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.view-classement-btn {
+    background: var(--gradient-red);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.view-classement-btn:hover {
+    box-shadow: var(--glow-red);
+    transform: scale(1.05);
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    overflow-y: auto;
+}
+
+.modal-content {
+    background: var(--gradient-card);
+    margin: 50px auto;
+    padding: 40px;
+    border-radius: var(--card-radius);
+    max-width: 900px;
+    border: 2px solid var(--primary-red);
+    position: relative;
+}
+
+.modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 2rem;
+    color: var(--text-grey);
+    cursor: pointer;
+    transition: color 0.3s ease;
+    background: none;
+    border: none;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    color: var(--primary-red);
+}
+
+.modal-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--primary-red);
+}
+
+.modal-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: var(--text-white);
+    font-family: var(--font-heading);
+}
+
+.classement-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.classement-table thead {
+    background: var(--gradient-red);
+}
+
+.classement-table th {
+    padding: 15px;
+    text-align: left;
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+.classement-table td {
+    padding: 15px;
+    border-bottom: 1px solid var(--medium-grey);
+    color: var(--text-white);
+}
+
+.classement-table tbody tr:hover {
+    background: rgba(255, 26, 26, 0.1);
+}
+
+.rank-badge {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.rank-1 {
+    background: var(--gradient-gold);
+    color: var(--primary-black);
+}
+
+.rank-2 {
+    background: linear-gradient(135deg, #c0c0c0 0%, #808080 100%);
+    color: white;
+}
+
+.rank-3 {
+    background: linear-gradient(135deg, #cd7f32 0%, #8b4513 100%);
+    color: white;
+}
+
+.rank-other {
+    background: var(--medium-grey);
+    color: var(--text-white);
+}
+
+.player-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.player-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--gradient-red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+}
+
+.team-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.team-code {
+    font-size: 0.85rem;
+    color: var(--text-grey);
+    font-family: monospace;
+}
+
+.empty-classement {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-grey);
+}
+
+.empty-classement i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    color: var(--text-dark);
+}
+
+@media (max-width: 768px) {
+    .tournoi-header {
+        flex-direction: column;
+    }
+    
+    .tournoi-image,
+    .tournoi-image-placeholder {
+        width: 100%;
+        height: 200px;
+    }
+    
+    .modal-content {
+        margin: 20px;
+        padding: 20px;
+    }
+    
+    .classements-hero h1 {
+        font-size: 2.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="classements-hero">
+    <div class="container">
+        <h1>Classements <span class="highlight">Tournois</span></h1>
+        <p>Consultez les classements des tournois en cours et terminés</p>
+    </div>
+</div>
+
+<section class="classements-container">
+    <div class="container">
+        {% for data in tournois_data %}
+        <div class="tournoi-card" onclick="openModal('modal-{{ data.tournoi.id }}')">
+            <div class="tournoi-header">
+                <div class="tournoi-info">
+                    <h3 class="tournoi-title">{{ data.tournoi.titre }}</h3>
+                    <div class="tournoi-meta">
+                        <span>
+                            <i class="fas fa-gamepad"></i>
+                            {{ data.tournoi.get_mode_display }}
+                            {% if data.tournoi.type_tournoi %}
+                                - {{ data.tournoi.get_type_tournoi_display }}
+                            {% endif %}
+                        </span>
+                        <span>
+                            <i class="fas fa-calendar"></i>
+                            {{ data.tournoi.date_debut|date:"d M Y" }} - {{ data.tournoi.date_fin|date:"d M Y" }}
+                        </span>
+                        <span>
+                            <i class="fas fa-trophy"></i>
+                            {{ data.tournoi.recompense }}
+                        </span>
+                    </div>
+                    <span class="tournoi-status {% if data.est_en_cours %}status-en-cours{% else %}status-termine{% endif %}">
+                        {% if data.est_en_cours %}En cours{% else %}Terminé{% endif %}
+                    </span>
+                </div>
+                {% if data.tournoi.image %}
+                    <img src="{{ data.tournoi.image.url }}" alt="{{ data.tournoi.titre }}" class="tournoi-image">
+                {% else %}
+                    <div class="tournoi-image-placeholder">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="tournoi-stats">
+                <div class="stat-item">
+                    <div class="stat-value">{{ data.nb_participants }}</div>
+                    <div class="stat-label">Participants</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ data.tournoi.prix_participation|floatformat:0 }} FCFA</div>
+                    <div class="stat-label">Récompense</div>
+                </div>
+            </div>
+            <button class="view-classement-btn" style="margin-top: 20px; width: 100%;">
+                Voir le classement <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <!-- Modal pour ce tournoi -->
+        <div id="modal-{{ data.tournoi.id }}" class="modal">
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeModal('modal-{{ data.tournoi.id }}')">&times;</button>
+                <div class="modal-header">
+                    <h2 class="modal-title">{{ data.tournoi.titre }}</h2>
+                    <div class="tournoi-meta">
+                        <span>
+                            <i class="fas fa-gamepad"></i>
+                            {{ data.tournoi.get_mode_display }}
+                            {% if data.tournoi.type_tournoi %}
+                                - {{ data.tournoi.get_type_tournoi_display }}
+                            {% endif %}
+                        </span>
+                        <span>
+                            <i class="fas fa-calendar"></i>
+                            {{ data.tournoi.date_debut|date:"d M Y" }} - {{ data.tournoi.date_fin|date:"d M Y" }}
+                        </span>
+                        <span>
+                            <i class="fas fa-trophy"></i>
+                            {{ data.tournoi.recompense }}
+                        </span>
+                    </div>
+                    <p style="color: var(--text-grey); margin-top: 15px;">{{ data.tournoi.description }}</p>
+                </div>
+                
+                {% if data.classement %}
+                <table class="classement-table">
+                    <thead>
+                        <tr>
+                            <th>Rang</th>
+                            {% if data.tournoi.mode == 'MJ' or data.tournoi.type_tournoi == 'duo' or data.tournoi.type_tournoi == 'escouade' %}
+                                <th>Équipe</th>
+                                <th>Membres</th>
+                            {% else %}
+                                <th>Joueur</th>
+                            {% endif %}
+                            <th>Date d'inscription</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in data.classement %}
+                        <tr>
+                            <td>
+                                <span class="rank-badge {% if forloop.counter <= 3 %}rank-{{ forloop.counter }}{% else %}rank-other{% endif %}">
+                                    {{ forloop.counter }}
+                                </span>
+                            </td>
+                            {% if item.type == 'equipe' %}
+                                <td>
+                                    <div class="team-info">
+                                        <strong>{{ item.code }}</strong>
+                                        <span class="team-code">Code: {{ item.code }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                                        {% for membre in item.membres %}
+                                        <div class="player-info">
+                                            <div class="player-avatar">
+                                                {{ membre.profil.utilisateur.nom|first }}{{ membre.profil.utilisateur.prenom|first }}
+                                            </div>
+                                            <div>
+                                                <div>{{ membre.profil.utilisateur.nom }} {{ membre.profil.utilisateur.prenom }}</div>
+                                                {% if membre.profil.utilisateur.email %}
+                                                <div style="font-size: 0.8rem; color: var(--text-grey);">{{ membre.profil.utilisateur.email }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td>{{ item.equipe.cree_le|date:"d M Y" }}</td>
+                            {% else %}
+                                <td>
+                                    <div class="player-info">
+                                        <div class="player-avatar">
+                                            {{ item.participant.profil.utilisateur.nom|first }}{{ item.participant.profil.utilisateur.prenom|first }}
+                                        </div>
+                                        <div>
+                                            <div>{{ item.participant.profil.utilisateur.nom }} {{ item.participant.profil.utilisateur.prenom }}</div>
+                                            {% if item.participant.profil.utilisateur.email %}
+                                            <div style="font-size: 0.8rem; color: var(--text-grey);">{{ item.participant.profil.utilisateur.email }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ item.participant.rejoint_le|date:"d M Y" }}</td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-classement">
+                    <i class="fas fa-trophy"></i>
+                    <p>Le classement sera disponible une fois le tournoi terminé.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div style="text-align: center; padding: 80px 20px; color: var(--text-grey);">
+            <i class="fas fa-trophy" style="font-size: 4rem; margin-bottom: 20px; color: var(--text-dark);"></i>
+            <p style="font-size: 1.2rem;">Aucun tournoi disponible pour le moment.</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openModal(modalId) {
+    document.getElementById(modalId).style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Fermer le modal en cliquant en dehors
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Fermer avec la touche Escape
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.style.display = 'none';
+        });
+        document.body.style.overflow = 'auto';
+    }
+});
+</script>
+{% endblock %}

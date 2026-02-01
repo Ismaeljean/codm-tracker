@@ -1,0 +1,547 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ post.titre }} - {{ communaute.nom }} - Forum CODM Tracker{% endblock %}
+{% block nav_forum %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+.post-detail-container {
+    padding: 60px 0 100px;
+}
+
+.post-detail-card {
+    background: var(--gradient-card);
+    border-radius: var(--card-radius);
+    padding: 40px;
+    border: 2px solid var(--primary-red);
+    margin-bottom: 30px;
+}
+
+.post-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--primary-red);
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.post-detail-title {
+    flex: 1;
+}
+
+.post-detail-title h1 {
+    font-size: 2.2rem;
+    margin-bottom: 15px;
+    color: var(--text-white);
+    font-family: var(--font-heading);
+    line-height: 1.3;
+}
+
+.post-detail-meta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    color: var(--text-grey);
+    font-size: 0.95rem;
+}
+
+.post-author-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: var(--text-white);
+}
+
+.post-type-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.type-texte {
+    background: var(--gradient-card);
+    color: var(--text-white);
+    border: 1px solid var(--medium-grey);
+}
+
+.type-image {
+    background: var(--gradient-red);
+    color: white;
+}
+
+.type-lien {
+    background: var(--gradient-orange);
+    color: white;
+}
+
+.post-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.like-btn {
+    padding: 10px 20px;
+    background: var(--gradient-card);
+    border: 2px solid var(--medium-grey);
+    border-radius: var(--border-radius);
+    color: var(--text-white);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.like-btn:hover {
+    border-color: var(--primary-red);
+    transform: translateY(-2px);
+}
+
+.like-btn.liked {
+    background: var(--gradient-red);
+    border-color: var(--primary-red);
+    color: white;
+}
+
+.post-content {
+    color: var(--text-white);
+    line-height: 1.8;
+    font-size: 1.05rem;
+    margin: 25px 0;
+}
+
+.post-image {
+    width: 100%;
+    max-height: 600px;
+    object-fit: contain;
+    border-radius: var(--border-radius);
+    margin: 25px 0;
+    border: 2px solid var(--medium-grey);
+}
+
+.post-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 25px;
+    background: var(--gradient-orange);
+    border-radius: var(--border-radius);
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    margin: 20px 0;
+    transition: all 0.3s ease;
+}
+
+.post-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(255, 102, 0, 0.3);
+}
+
+.commentaires-section {
+    margin-top: 50px;
+}
+
+.commentaires-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--primary-red);
+}
+
+.commentaires-header h2 {
+    font-size: 1.8rem;
+    color: var(--text-white);
+    font-family: var(--font-heading);
+}
+
+.comment-form-card {
+    background: var(--gradient-card);
+    border-radius: var(--card-radius);
+    padding: 25px;
+    border: 1px solid var(--medium-grey);
+    margin-bottom: 30px;
+}
+
+.comment-form-card h3 {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    color: var(--text-white);
+    font-family: var(--font-heading);
+}
+
+.comment-form textarea {
+    width: 100%;
+    padding: 15px;
+    background: var(--dark-grey);
+    border: 2px solid var(--medium-grey);
+    border-radius: var(--border-radius);
+    color: var(--text-white);
+    font-size: 1rem;
+    font-family: inherit;
+    min-height: 120px;
+    resize: vertical;
+    margin-bottom: 15px;
+}
+
+.comment-form textarea:focus {
+    outline: none;
+    border-color: var(--primary-red);
+    box-shadow: 0 0 0 3px rgba(255, 26, 26, 0.1);
+}
+
+.commentaires-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.commentaire-card {
+    background: var(--gradient-card);
+    border-radius: var(--card-radius);
+    padding: 20px;
+    border: 1px solid var(--medium-grey);
+    transition: all 0.3s ease;
+}
+
+.commentaire-card:hover {
+    border-color: var(--primary-red);
+    transform: translateX(5px);
+}
+
+.commentaire-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.commentaire-author {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: var(--text-white);
+}
+
+.commentaire-date {
+    color: var(--text-grey);
+    font-size: 0.85rem;
+}
+
+.commentaire-content {
+    color: var(--text-white);
+    line-height: 1.7;
+    margin: 15px 0;
+}
+
+.commentaire-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid var(--medium-grey);
+}
+
+.commentaire-like-btn {
+    background: transparent;
+    border: 1px solid var(--medium-grey);
+    color: var(--text-grey);
+    padding: 6px 12px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+}
+
+.commentaire-like-btn:hover {
+    border-color: var(--primary-red);
+    color: var(--primary-red);
+}
+
+.commentaire-like-btn.liked {
+    background: var(--gradient-red);
+    border-color: var(--primary-red);
+    color: white;
+}
+
+.empty-commentaires {
+    text-align: center;
+    padding: 60px 20px;
+    background: var(--gradient-card);
+    border-radius: var(--card-radius);
+    border: 1px solid var(--medium-grey);
+}
+
+.empty-commentaires i {
+    font-size: 3rem;
+    color: var(--text-dark);
+    margin-bottom: 15px;
+}
+
+.empty-commentaires p {
+    color: var(--text-grey);
+    font-size: 1.1rem;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+}
+
+.pagination a,
+.pagination span {
+    padding: 10px 18px;
+    background: var(--gradient-card);
+    border: 1px solid var(--medium-grey);
+    border-radius: var(--border-radius);
+    color: var(--text-white);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.pagination a:hover {
+    background: var(--gradient-red);
+    border-color: var(--primary-red);
+    transform: translateY(-2px);
+}
+
+.pagination .active {
+    background: var(--gradient-red);
+    border-color: var(--primary-red);
+    color: white;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="post-detail-container">
+    <div class="container">
+        <div style="margin-bottom: 20px;">
+            <a href="{% url 'forum:communaute' communaute.slug %}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Retour à {{ communaute.nom }}
+            </a>
+        </div>
+
+        <div class="post-detail-card">
+            <div class="post-detail-header">
+                <div class="post-detail-title">
+                    <h1>{{ post.titre }}</h1>
+                    <div class="post-detail-meta">
+                        <div class="post-author-info">
+                            <i class="fas fa-user"></i>
+                            {{ post.auteur.nom }} {{ post.auteur.prenom }}
+                        </div>
+                        <span class="post-type-badge type-{{ post.type_post }}">
+                            {% if post.type_post == 'texte' %}
+                                <i class="fas fa-file-alt"></i> Texte
+                            {% elif post.type_post == 'image' %}
+                                <i class="fas fa-image"></i> Image
+                            {% elif post.type_post == 'lien' %}
+                                <i class="fas fa-link"></i> Lien
+                            {% endif %}
+                        </span>
+                        <span><i class="fas fa-clock"></i> {{ post.date_creation|timesince }} ago</span>
+                    </div>
+                </div>
+                {% if user.is_authenticated %}
+                <div class="post-actions">
+                    <button class="like-btn {% if a_like %}liked{% endif %}" 
+                            onclick="likePost({{ post.id }})" 
+                            id="likeBtn{{ post.id }}">
+                        <i class="fas fa-heart"></i>
+                        <span id="likesCount{{ post.id }}">{{ post.nombre_likes }}</span>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="post-content">
+                {% if post.type_post == 'image' and post.image %}
+                <img src="{{ post.image.url }}" alt="{{ post.titre }}" class="post-image">
+                {% endif %}
+                
+                {% if post.type_post == 'lien' and post.lien_url %}
+                <a href="{{ post.lien_url }}" target="_blank" rel="noopener noreferrer" class="post-link">
+                    <i class="fas fa-external-link-alt"></i>
+                    {{ post.lien_url }}
+                </a>
+                {% endif %}
+                
+                <div style="white-space: pre-wrap;">{{ post.contenu }}</div>
+            </div>
+        </div>
+
+        <div class="commentaires-section">
+            <div class="commentaires-header">
+                <h2><i class="fas fa-comments"></i> Commentaires ({{ post.nombre_commentaires }})</h2>
+            </div>
+
+            {% if user.is_authenticated %}
+            <div class="comment-form-card">
+                <h3>Ajouter un commentaire</h3>
+                <form method="post" action="{% url 'forum:commenter_post' post.id %}" class="comment-form">
+                    {% csrf_token %}
+                    <textarea name="contenu" placeholder="Écrivez votre commentaire..." required></textarea>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Publier
+                    </button>
+                </form>
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 30px; background: var(--gradient-card); border-radius: var(--border-radius); border: 1px solid var(--medium-grey); margin-bottom: 30px;">
+                <p style="color: var(--text-grey); margin-bottom: 20px;">Vous devez être connecté pour commenter</p>
+                <a href="{% url 'utilisateurs:login' %}?next={{ request.path }}" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Se connecter
+                </a>
+            </div>
+            {% endif %}
+
+            {% if commentaires %}
+            <div class="commentaires-list">
+                {% for commentaire in commentaires %}
+                <div class="commentaire-card">
+                    <div class="commentaire-header">
+                        <div class="commentaire-author">
+                            <i class="fas fa-user-circle"></i>
+                            {{ commentaire.auteur.nom }} {{ commentaire.auteur.prenom }}
+                        </div>
+                        <div class="commentaire-date">
+                            <i class="fas fa-clock"></i> {{ commentaire.date_creation|timesince }} ago
+                        </div>
+                    </div>
+                    <div class="commentaire-content">
+                        {{ commentaire.contenu|linebreaks }}
+                    </div>
+                    {% if user.is_authenticated %}
+                    <div class="commentaire-actions">
+                        <button class="commentaire-like-btn {% if commentaire.id in commentaires_likes %}liked{% endif %}" 
+                                onclick="likeCommentaire({{ commentaire.id }})"
+                                id="commentLikeBtn{{ commentaire.id }}">
+                            <i class="fas fa-heart"></i>
+                            <span id="commentLikesCount{{ commentaire.id }}">{{ commentaire.nombre_likes }}</span>
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination commentaires -->
+            {% if commentaires.has_other_pages %}
+                <div class="pagination">
+                    {% if commentaires.has_previous %}
+                        <a href="?page=1" aria-label="Première page">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page={{ commentaires.previous_page_number }}" aria-label="Page précédente">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    {% endif %}
+                    
+                    {% for num in commentaires.paginator.page_range %}
+                        {% if commentaires.number == num %}
+                            <span class="active">{{ num }}</span>
+                        {% elif num > commentaires.number|add:'-3' and num < commentaires.number|add:'3' %}
+                            <a href="?page={{ num }}">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if commentaires.has_next %}
+                        <a href="?page={{ commentaires.next_page_number }}" aria-label="Page suivante">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page={{ commentaires.paginator.num_pages }}" aria-label="Dernière page">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+            {% else %}
+            <div class="empty-commentaires">
+                <i class="fas fa-comments"></i>
+                <p>Aucun commentaire pour le moment. Soyez le premier à commenter !</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function likePost(postId) {
+    fetch(`/forum/post/${postId}/like/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const btn = document.getElementById(`likeBtn${postId}`);
+            const count = document.getElementById(`likesCount${postId}`);
+            
+            if (data.action === 'liked') {
+                btn.classList.add('liked');
+            } else {
+                btn.classList.remove('liked');
+            }
+            
+            count.textContent = data.likes_count;
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function likeCommentaire(commentaireId) {
+    fetch(`/forum/commentaire/${commentaireId}/like/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const btn = document.getElementById(`commentLikeBtn${commentaireId}`);
+            const count = document.getElementById(`commentLikesCount${commentaireId}`);
+            
+            if (data.action === 'liked') {
+                btn.classList.add('liked');
+            } else {
+                btn.classList.remove('liked');
+            }
+            
+            count.textContent = data.likes_count;
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>
+{% endblock %}

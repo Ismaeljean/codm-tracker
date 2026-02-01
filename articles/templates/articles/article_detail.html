@@ -1,0 +1,437 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ article.titre }} - Blog CODM Tracker{% endblock %}
+{% block nav_blog %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+.article-header {
+    background: linear-gradient(135deg, rgba(255, 26, 26, 0.1) 0%, rgba(204, 0, 0, 0.1) 100%);
+    padding: 80px 0 60px;
+    border-bottom: 2px solid var(--primary-red);
+    margin-bottom: 50px;
+}
+
+.article-header-content {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.article-category {
+    display: inline-block;
+    background: var(--gradient-red);
+    color: white;
+    padding: 8px 18px;
+    border-radius: 25px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 20px;
+}
+
+.article-title {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: var(--text-white);
+    font-family: var(--font-display);
+    line-height: 1.2;
+}
+
+.article-meta {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 25px;
+    flex-wrap: wrap;
+    color: var(--text-grey);
+    font-size: 0.95rem;
+}
+
+.article-meta span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.article-meta i {
+    color: var(--primary-red);
+}
+
+.article-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px 100px;
+}
+
+.article-intro {
+    font-size: 1.3rem;
+    line-height: 1.8;
+    color: var(--text-white);
+    margin-bottom: 50px;
+    padding: 30px;
+    background: var(--gradient-card);
+    border-radius: var(--card-radius);
+    border-left: 4px solid var(--primary-red);
+}
+
+.article-content {
+    line-height: 1.9;
+    font-size: 1.1rem;
+}
+
+.article-block {
+    margin-bottom: 40px;
+}
+
+.article-block-titre {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-white);
+    font-family: var(--font-heading);
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--primary-red);
+}
+
+.article-block-texte {
+    font-size: 1.1rem;
+    line-height: 1.9;
+    color: var(--text-white);
+    margin-bottom: 25px;
+}
+
+.article-block-texte p {
+    margin-bottom: 20px;
+}
+
+.article-block-image {
+    margin: 30px 0;
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    border: 2px solid var(--medium-grey);
+}
+
+.article-block-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.article-block-image.centre {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.article-block-image.gauche {
+    float: left;
+    max-width: 400px;
+    margin-right: 30px;
+    margin-bottom: 20px;
+}
+
+.article-block-image.droite {
+    float: right;
+    max-width: 400px;
+    margin-left: 30px;
+    margin-bottom: 20px;
+}
+
+.article-block-image figcaption {
+    padding: 15px;
+    background: var(--dark-grey);
+    color: var(--text-grey);
+    font-size: 0.9rem;
+    text-align: center;
+    font-style: italic;
+}
+
+.article-block-liste {
+    background: var(--gradient-card);
+    padding: 25px 40px;
+    border-radius: var(--card-radius);
+    border-left: 4px solid var(--primary-red);
+    margin: 25px 0;
+}
+
+.article-block-liste ul,
+.article-block-liste ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.article-block-liste ul li,
+.article-block-liste ol li {
+    padding: 10px 0;
+    padding-left: 30px;
+    position: relative;
+    color: var(--text-white);
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
+.article-block-liste ul li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--primary-red);
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.article-block-liste ol {
+    counter-reset: item;
+}
+
+.article-block-liste ol li {
+    counter-increment: item;
+    padding-left: 40px;
+}
+
+.article-block-liste ol li::before {
+    content: counter(item) '.';
+    position: absolute;
+    left: 0;
+    color: var(--primary-red);
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.article-block-citation {
+    background: var(--gradient-card);
+    border-left: 4px solid var(--primary-orange);
+    padding: 30px 40px;
+    margin: 30px 0;
+    border-radius: var(--card-radius);
+    font-style: italic;
+    font-size: 1.2rem;
+    color: var(--text-white);
+    position: relative;
+}
+
+.article-block-citation::before {
+    content: '"';
+    font-size: 4rem;
+    color: var(--primary-orange);
+    position: absolute;
+    top: 10px;
+    left: 15px;
+    opacity: 0.3;
+    font-family: serif;
+}
+
+.article-block-code {
+    background: var(--primary-black);
+    border: 1px solid var(--medium-grey);
+    border-radius: var(--border-radius);
+    padding: 25px;
+    margin: 25px 0;
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95rem;
+    color: var(--text-white);
+}
+
+.article-block-video {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    margin: 30px 0;
+    border-radius: var(--card-radius);
+    border: 2px solid var(--medium-grey);
+}
+
+.article-block-video iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.article-footer {
+    margin-top: 60px;
+    padding-top: 40px;
+    border-top: 2px solid var(--primary-red);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.article-author {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.article-author-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--gradient-red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.article-author-info h4 {
+    color: var(--text-white);
+    margin-bottom: 5px;
+    font-family: var(--font-heading);
+}
+
+.article-author-info p {
+    color: var(--text-grey);
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .article-title {
+        font-size: 2rem;
+    }
+    
+    .article-intro {
+        font-size: 1.1rem;
+        padding: 20px;
+    }
+    
+    .article-block-image.gauche,
+    .article-block-image.droite {
+        float: none;
+        max-width: 100%;
+        margin: 20px 0;
+    }
+    
+    .article-block-liste {
+        padding: 20px 25px;
+    }
+    
+    .article-block-citation {
+        padding: 20px 25px;
+        font-size: 1.1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="article-header">
+    <div class="container">
+        <div class="article-header-content">
+            <span class="article-category">Article</span>
+            <h1 class="article-title">{{ article.titre }}</h1>
+            <div class="article-meta">
+                <span>
+                    <i class="fas fa-user"></i>
+                    Par {{ article.auteur.nom|default:"Admin" }} {{ article.auteur.prenom|default:"" }}
+                </span>
+                <span>
+                    <i class="fas fa-calendar"></i>
+                    {{ article.cree_le|date:"d M Y" }}
+                </span>
+                {% if article.modifie_le != article.cree_le %}
+                <span>
+                    <i class="fas fa-edit"></i>
+                    Modifié le {{ article.modifie_le|date:"d M Y" }}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="article-container">
+    {% if article.contenu %}
+    <div class="article-intro">
+        {{ article.contenu|linebreaks }}
+    </div>
+    {% endif %}
+    
+    <div class="article-content">
+        {% for block in blocks %}
+        <div class="article-block">
+            {% if block.type_block == 'titre' %}
+                <h2 class="article-block-titre">{{ block.contenu }}</h2>
+            
+            {% elif block.type_block == 'texte' %}
+                <div class="article-block-texte">
+                    {{ block.contenu|linebreaks }}
+                </div>
+            
+            {% elif block.type_block == 'image' %}
+                <figure class="article-block-image {{ block.alignement }}">
+                    {% if block.image %}
+                        <img src="{{ block.image.image.url }}" alt="{{ block.image.legende|default:block.contenu }}">
+                    {% elif block.contenu %}
+                        <img src="{{ block.contenu }}" alt="Image article">
+                    {% endif %}
+                    {% if block.image.legende %}
+                        <figcaption>{{ block.image.legende }}</figcaption>
+                    {% endif %}
+                </figure>
+            
+            {% elif block.type_block == 'liste' %}
+                <div class="article-block-liste">
+                    {{ block.contenu|safe }}
+                </div>
+            
+            {% elif block.type_block == 'citation' %}
+                <blockquote class="article-block-citation">
+                    {{ block.contenu|linebreaks }}
+                </blockquote>
+            
+            {% elif block.type_block == 'code' %}
+                <pre class="article-block-code"><code>{{ block.contenu }}</code></pre>
+            
+            {% elif block.type_block == 'video' %}
+                <div class="article-block-video">
+                    <iframe src="{{ block.contenu }}" frameborder="0" allowfullscreen></iframe>
+                </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="article-block-texte">
+            <p style="color: var(--text-grey); text-align: center; padding: 40px;">
+                Aucun contenu supplémentaire pour cet article.
+            </p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="article-footer">
+        <div class="article-author">
+            <div class="article-author-avatar">
+                {% if article.auteur %}
+                    {{ article.auteur.nom|first }}{{ article.auteur.prenom|first }}
+                {% else %}
+                    A
+                {% endif %}
+            </div>
+            <div class="article-author-info">
+                <h4>
+                    {% if article.auteur %}
+                        {{ article.auteur.nom }} {{ article.auteur.prenom }}
+                    {% else %}
+                        Admin
+                    {% endif %}
+                </h4>
+                <p>Auteur de l'article</p>
+            </div>
+        </div>
+        <a href="{% url 'articles:blog' %}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i> Retour au blog
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Boutique - CODM Tracker{% endblock %}
+{% block nav_boutique %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+.boutique-hero {
+    background: linear-gradient(135deg, rgba(255, 26, 26, 0.1) 0%, rgba(204, 0, 0, 0.1) 100%);
+    padding: 80px 0;
+    text-align: center;
+    border-bottom: 2px solid var(--primary-red);
+}
+
+.boutique-hero h1 {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    font-family: var(--font-display);
+}
+
+.boutique-hero p {
+    font-size: 1.2rem;
+    color: var(--text-grey);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.categories-container {
+    padding: 60px 0 100px;
+}
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 50px;
+}
+
+.category-card {
+    background: var(--gradient-card);
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid var(--medium-grey);
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.category-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--glow-red);
+    border-color: var(--primary-red);
+}
+
+.category-image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 250px;
+    overflow: hidden;
+    background: var(--dark-grey);
+}
+
+.category-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.category-card:hover .category-image-wrapper img {
+    transform: scale(1.1);
+}
+
+.category-image-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-red) 0%, var(--dark-red) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.category-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.category-card:hover .category-overlay {
+    opacity: 1;
+}
+
+.category-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--gradient-red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.category-body {
+    padding: 25px;
+}
+
+.category-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--text-white);
+    font-family: var(--font-heading);
+}
+
+.category-action {
+    color: var(--primary-red);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: gap 0.3s ease;
+}
+
+.category-card:hover .category-action {
+    gap: 12px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    grid-column: 1 / -1;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+}
+
+.empty-state p {
+    color: var(--text-grey);
+    font-size: 1.1rem;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+}
+
+.pagination a,
+.pagination span {
+    padding: 10px 18px;
+    background: var(--gradient-card);
+    border: 1px solid var(--medium-grey);
+    border-radius: var(--border-radius);
+    color: var(--text-white);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.pagination a:hover {
+    background: var(--gradient-red);
+    border-color: var(--primary-red);
+    transform: translateY(-2px);
+}
+
+.pagination .active {
+    background: var(--gradient-red);
+    border-color: var(--primary-red);
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .boutique-hero h1 {
+        font-size: 2.5rem;
+    }
+    
+    .categories-grid {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="boutique-hero">
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+            <div style="flex: 1;">
+                <h1>Boutique <span class="highlight">CODM</span></h1>
+                <p>Découvrez nos produits exclusifs et équipements pour améliorer votre gameplay</p>
+            </div>
+            {% if user.is_authenticated %}
+            <a href="{% url 'boutique:panier' %}" class="btn btn-outline" style="position: relative; padding: 12px 24px; display: flex; align-items: center; gap: 10px; text-decoration: none;">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Panier</span>
+                {% if cart_count > 0 %}
+                <span style="position: absolute; top: -8px; right: -8px; background: var(--primary-red); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; box-shadow: 0 2px 8px rgba(255, 26, 26, 0.5);">
+                    {{ cart_count }}
+                </span>
+                {% endif %}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<section class="categories-container">
+    <div class="container">
+        <div class="section-header" style="text-align: left; margin-bottom: 40px;">
+            <h2>Nos <span class="highlight">Catégories</span></h2>
+            <p class="section-desc">Parcourez nos différentes catégories de produits</p>
+        </div>
+
+        <div class="categories-grid">
+            {% for cat in categories %}
+            <a href="{% url 'boutique:categorie' cat.id %}" class="category-card">
+                <div class="category-image-wrapper">
+                    {% if cat.image %}
+                        <img src="{{ cat.image.url }}" alt="{{ cat.nom }}">
+                        <div class="category-overlay">
+                            <div class="category-icon">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="category-image-placeholder">
+                            <i class="fas fa-box"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="category-body">
+                    <h3 class="category-name">{{ cat.nom }}</h3>
+                    <div class="category-action">
+                        Voir les produits <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
+            </a>
+            {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-box-open"></i>
+                <p>Aucune catégorie disponible pour le moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if categories.has_other_pages %}
+            <div class="pagination">
+                {% if categories.has_previous %}
+                    <a href="?page=1" aria-label="Première page">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                    <a href="?page={{ categories.previous_page_number }}" aria-label="Page précédente">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                {% endif %}
+                
+                {% for num in categories.paginator.page_range %}
+                    {% if categories.number == num %}
+                        <span class="active">{{ num }}</span>
+                    {% elif num > categories.number|add:'-3' and num < categories.number|add:'3' %}
+                        <a href="?page={{ num }}">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if categories.has_next %}
+                    <a href="?page={{ categories.next_page_number }}" aria-label="Page suivante">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                    <a href="?page={{ categories.paginator.num_pages }}" aria-label="Dernière page">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                {% endif %}
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px; color: var(--text-grey);">
+                <small>
+                    Page {{ categories.number }} sur {{ categories.paginator.num_pages }}
+                    ({{ categories.paginator.count }} catégorie{{ categories.paginator.count|pluralize }} au total)
+                </small>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,1479 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% comment %}
+Template filter pour récupérer une valeur d'un dictionnaire
+{% endcomment %}
+
+{% block title %}Tournois - CODM Tracker{% endblock %}
+{% block nav_tournois %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <div class="page-breadcrumb">
+            <a href="/">Accueil</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Tournois</span>
+        </div>
+        <h1 class="page-title">Tournois <span class="highlight">Esport</span></h1>
+    </div>
+</div>
+
+<section style="padding: 40px 0 100px;">
+    <div class="container">
+        <!-- Tabs pour filtrer les tournois -->
+        <div class="tournament-tabs">
+            <button class="tournament-tab active" data-tab="en-cours" onclick="switchTab('en-cours')">
+                En Cours
+                {% if tournois_en_cours.count > 0 %}
+                <span class="badge">{{ tournois_en_cours.count }}</span>
+                {% endif %}
+            </button>
+            <button class="tournament-tab" data-tab="a-venir" onclick="switchTab('a-venir')">
+                À Venir
+                {% if tournois_a_venir.count > 0 %}
+                <span class="badge">{{ tournois_a_venir.count }}</span>
+                {% endif %}
+            </button>
+            <button class="tournament-tab" data-tab="passes" onclick="switchTab('passes')">
+                Passés
+            </button>
+        </div>
+
+        <!-- Tournois en cours -->
+        <div id="en-cours" class="tournament-section">
+            <div class="section-header" style="text-align: left; margin-bottom: 30px;">
+                <span class="section-badge section-badge-red">En cours</span>
+                <h2>Tournois <span class="highlight">Actifs</span></h2>
+                <p class="section-desc">Rejoignez les tournois en cours et montrez votre talent</p>
+            </div>
+
+            <div class="tournaments-grid">
+                {% for tournoi in tournois_en_cours %}
+                <div class="tournament-card">
+                    <div class="tournament-banner">
+                        {% if tournoi.image %}
+                        <img src="{{ tournoi.image.url }}" alt="{{ tournoi.titre }}" class="tournament-image">
+                        {% endif %}
+                        <div class="tournament-status tournament-status-active">
+                            <i class="fas fa-circle"></i> En cours
+                        </div>
+                    </div>
+                    <div class="tournament-body">
+                        <div class="tournament-title">{{ tournoi.titre }}</div>
+                        {% if tournoi.mode == 'BR' and tournoi.type_tournoi %}
+                        {% if tournoi.mode == 'BR' and tournoi.type_tournoi %}
+                        <div class="tournament-type-badge tournament-type-{{ tournoi.type_tournoi }}">
+                            {{ tournoi.get_type_tournoi_display }}
+                        </div>
+                        {% elif tournoi.mode == 'MJ' %}
+                        <div class="tournament-type-badge tournament-type-mj">
+                            5 Joueurs
+                        </div>
+                        {% endif %}
+                        {% elif tournoi.mode == 'MJ' %}
+                        <div class="tournament-type-badge tournament-type-mj">
+                            5 Joueurs
+                        </div>
+                        {% endif %}
+                        <div class="tournament-meta">
+                            <div class="tournament-meta-item">
+                                Mode: <span>{{ tournoi.get_mode_display }}</span>
+                            </div>
+                            <div class="tournament-meta-item">
+                                Début: <span>{{ tournoi.date_debut|date:"d M Y H:i" }}</span>
+                            </div>
+                            <div class="tournament-meta-item">
+                                Fin: <span>{{ tournoi.date_fin|date:"d M Y H:i" }}</span>
+                            </div>
+                            <div class="tournament-meta-item">
+                                Récompense: <span>{{ tournoi.recompense }}</span>
+                            </div>
+                            {% if tournoi.prix_participation > 0 %}
+                            <div class="tournament-price-card">
+                                <div class="tournament-price-main">
+                                    <span class="tournament-price-label">Participation:</span>
+                                    <span class="tournament-price-value">{{ tournoi.prix_participation|floatformat:0 }} FCFA</span>
+                                </div>
+                                {% if tournoi.nb_joueurs_requis > 1 %}
+                                <div class="tournament-price-detail">
+                                    <span>{{ tournoi.prix_par_personne|floatformat:0 }} FCFA par personne</span>
+                                    <span class="tournament-price-separator">•</span>
+                                    <span>{{ tournoi.nb_joueurs_requis }} joueurs</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <div class="tournament-price-card">
+                                <div class="tournament-price-main">
+                                    <span class="tournament-price-value" style="color: var(--gold);">Gratuit</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% if user.is_authenticated %}
+                            {% if tournoi.id in user_registrations %}
+                            <button class="btn btn-secondary btn-full" onclick="openRegistrationDetailsModal({{ tournoi.id }}, '{{ tournoi.titre }}')" id="btn-details-{{ tournoi.id }}">
+                                <i class="fas fa-check-circle"></i> Déjà inscrit
+                            </button>
+                            {% else %}
+                            <button class="btn btn-primary btn-full" onclick="openRegisterModal({{ tournoi.id }}, '{{ tournoi.titre|escapejs }}', {{ tournoi.prix_participation|default:0 }}, '{{ tournoi.mode }}', '{{ tournoi.type_tournoi|default:"" }}', {{ tournoi.nb_joueurs_requis|default:1 }}, {% if tournoi.has_equipes %}true{% else %}false{% endif %})" id="btn-register-{{ tournoi.id }}">
+                                S'inscrire
+                            </button>
+                            {% endif %}
+                        {% else %}
+                        <a href="{% url 'utilisateurs:login' %}" class="btn btn-primary btn-full">
+                            Se connecter pour s'inscrire
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="empty-message">Aucun tournoi en cours pour le moment.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Tournois à venir -->
+        <div id="a-venir" class="tournament-section" style="display: none;">
+            <div class="section-header" style="text-align: left; margin-bottom: 30px;">
+                <span class="section-badge section-badge-orange">À venir</span>
+                <h2>Tournois <span class="highlight">À Venir</span></h2>
+                <p class="section-desc">Préparez-vous pour les prochains tournois</p>
+            </div>
+
+            <div class="tournaments-grid">
+                {% for tournoi in tournois_a_venir %}
+                <div class="tournament-card">
+                    <div class="tournament-banner">
+                        {% if tournoi.image %}
+                        <img src="{{ tournoi.image.url }}" alt="{{ tournoi.titre }}" class="tournament-image">
+                        {% endif %}
+                        <div class="tournament-status tournament-status-upcoming">
+                            Bientôt
+                        </div>
+                    </div>
+                    <div class="tournament-body">
+                        <div class="tournament-title">{{ tournoi.titre }}</div>
+                        {% if tournoi.mode == 'BR' and tournoi.type_tournoi %}
+                        {% if tournoi.mode == 'BR' and tournoi.type_tournoi %}
+                        <div class="tournament-type-badge tournament-type-{{ tournoi.type_tournoi }}">
+                            {{ tournoi.get_type_tournoi_display }}
+                        </div>
+                        {% elif tournoi.mode == 'MJ' %}
+                        <div class="tournament-type-badge tournament-type-mj">
+                            5 Joueurs
+                        </div>
+                        {% endif %}
+                        {% elif tournoi.mode == 'MJ' %}
+                        <div class="tournament-type-badge tournament-type-mj">
+                            5 Joueurs
+                        </div>
+                        {% endif %}
+                        <div class="tournament-meta">
+                            <div class="tournament-meta-item">
+                                Mode: <span>{{ tournoi.get_mode_display }}</span>
+                            </div>
+                            <div class="tournament-meta-item">
+                                Début: <span>{{ tournoi.date_debut|date:"d M Y H:i" }}</span>
+                            </div>
+                            <div class="tournament-meta-item">
+                                Fin: <span>{{ tournoi.date_fin|date:"d M Y H:i" }}</span>
+                            </div>
+                            <div class="tournament-meta-item">
+                                Récompense: <span>{{ tournoi.recompense }}</span>
+                            </div>
+                            {% if tournoi.prix_participation > 0 %}
+                            <div class="tournament-price-card">
+                                <div class="tournament-price-main">
+                                    <span class="tournament-price-label">Participation:</span>
+                                    <span class="tournament-price-value">{{ tournoi.prix_participation|floatformat:0 }} FCFA</span>
+                                </div>
+                                {% if tournoi.nb_joueurs_requis > 1 %}
+                                <div class="tournament-price-detail">
+                                    <span>{{ tournoi.prix_par_personne|floatformat:0 }} FCFA par personne</span>
+                                    <span class="tournament-price-separator">•</span>
+                                    <span>{{ tournoi.nb_joueurs_requis }} joueurs</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <div class="tournament-price-card">
+                                <div class="tournament-price-main">
+                                    <span class="tournament-price-value" style="color: var(--gold);">Gratuit</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% if user.is_authenticated %}
+                            {% if tournoi.id in user_registrations %}
+                            <button class="btn btn-secondary btn-full" onclick="openRegistrationDetailsModal({{ tournoi.id }}, '{{ tournoi.titre }}')" id="btn-details-{{ tournoi.id }}">
+                                <i class="fas fa-check-circle"></i> Déjà inscrit
+                            </button>
+                            {% else %}
+                            <button class="btn btn-primary btn-full" onclick="openRegisterModal({{ tournoi.id }}, '{{ tournoi.titre|escapejs }}', {{ tournoi.prix_participation|default:0 }}, '{{ tournoi.mode }}', '{{ tournoi.type_tournoi|default:"" }}', {{ tournoi.nb_joueurs_requis|default:1 }}, {% if tournoi.has_equipes %}true{% else %}false{% endif %})" id="btn-register-{{ tournoi.id }}">
+                                S'inscrire
+                            </button>
+                            {% endif %}
+                        {% else %}
+                        <a href="{% url 'utilisateurs:login' %}" class="btn btn-primary btn-full">
+                            Se connecter pour s'inscrire
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="empty-message">Aucun tournoi à venir pour le moment.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Tournois passés -->
+        <div id="passes" class="tournament-section" style="display: none;">
+            <div class="section-header" style="text-align: left; margin-bottom: 30px;">
+                <span class="section-badge section-badge-grey">Passés</span>
+                <h2>Tournois <span class="highlight">Passés</span></h2>
+                <p class="section-desc">Historique des derniers tournois</p>
+            </div>
+
+            <div class="tournaments-grid">
+                {% for tournoi in tournois_passes %}
+                <div class="tournament-card tournament-card-past">
+                    <div class="tournament-banner">
+                        {% if tournoi.image %}
+                        <img src="{{ tournoi.image.url }}" alt="{{ tournoi.titre }}" class="tournament-image tournament-image-past">
+                        {% endif %}
+                        <div class="tournament-status tournament-status-past">
+                            Terminé
+                        </div>
+                    </div>
+                    <div class="tournament-body">
+                        <div class="tournament-title">{{ tournoi.titre }}</div>
+                        {% if tournoi.mode == 'BR' and tournoi.type_tournoi %}
+                        <div class="tournament-type-badge tournament-type-{{ tournoi.type_tournoi }}">
+                            {{ tournoi.get_type_tournoi_display }}
+                        </div>
+                        {% elif tournoi.mode == 'MJ' %}
+                        <div class="tournament-type-badge tournament-type-mj">
+                            5 Joueurs
+                        </div>
+                        {% endif %}
+                        <div class="tournament-meta">
+                            <div class="tournament-meta-item">
+                                Mode: <span>{{ tournoi.get_mode_display }}</span>
+                            </div>
+                            <div class="tournament-meta-item">
+                                Date: <span>{{ tournoi.date_debut|date:"d M Y" }}</span>
+                            </div>
+                            <div class="tournament-meta-item">
+                                Récompense: <span>{{ tournoi.recompense }}</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary btn-full" disabled>
+                            Tournoi terminé
+                        </button>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="empty-message">Aucun tournoi passé pour le moment.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal d'inscription avec paiement -->
+{% if user.is_authenticated %}
+<div id="registerModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Inscription au Tournoi</h2>
+            <span class="close" onclick="closeRegisterModal()">&times;</span>
+        </div>
+        <form id="registerForm" onsubmit="submitRegistration(event); return false;">
+            {% csrf_token %}
+            <input type="hidden" id="tournoiId" name="tournoi_id" value="">
+            <input type="hidden" id="tournoiType" name="tournoi_type">
+            <input type="hidden" id="actionType" name="action" value="create">
+            
+            <div class="modal-body">
+                <div class="modal-tournoi-info">
+                    <h3 id="tournoiTitle"></h3>
+                    <div id="tournoiTypeDisplay" class="tournament-type-badge-modal"></div>
+                    <div id="tournoiPrice" class="modal-price"></div>
+                </div>
+                
+                <!-- Section pour Duo/Escouade/MJ -->
+                <div id="teamSection" style="display: none;">
+                    <div class="team-actions">
+                        <button type="button" class="btn-team-action active" onclick="switchTeamAction('create')" id="btn-create-team">
+                            Créer une équipe
+                        </button>
+                        <button type="button" class="btn-team-action" onclick="switchTeamAction('join')" id="btn-join-team">
+                            Rejoindre une équipe
+                        </button>
+                    </div>
+                    
+                    <div id="createTeamSection">
+                        <div class="info-box">
+                            <i class="fas fa-info-circle"></i>
+                            <p id="createTeamInfo">Créez une équipe et partagez le code d'invitation avec vos coéquipiers. Chacun paiera sa part.</p>
+                        </div>
+                    </div>
+                    
+                    <div id="joinTeamSection" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label" for="code_invitation">
+                                <i class="fas fa-key"></i> Code d'Invitation
+                            </label>
+                            <input type="text" id="code_invitation" name="code_invitation" class="form-input" placeholder="Entrez le code d'invitation (8 caractères)" maxlength="8" style="text-transform: uppercase; font-family: monospace; letter-spacing: 2px; font-size: 1.1rem; text-align: center; border: 2px solid var(--primary-orange);">
+                            <small style="color: var(--text-grey); font-size: 0.85rem; display: block; margin-top: 5px;">
+                                <i class="fas fa-info-circle"></i> Demandez le code à votre coéquipier qui a créé l'équipe
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="payment_method">Méthode de Paiement</label>
+                    <select id="payment_method" name="payment_method" class="form-input" required>
+                        <option value="">Sélectionnez une méthode</option>
+                        <option value="orange_money">Orange Money</option>
+                        <option value="mtn_mobile">MTN Mobile Money</option>
+                        <option value="moov_money">Moov Money</option>
+                        <option value="carte_bancaire">Carte Bancaire</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="phoneGroup" style="display: none;">
+                    <label class="form-label" for="phone_number">Numéro de Téléphone</label>
+                    <input type="tel" id="phone_number" name="phone_number" class="form-input" placeholder="Ex: +225 07 12 34 56 78">
+                </div>
+                
+                <div class="form-group" id="cardGroup" style="display: none;">
+                    <label class="form-label" for="card_number">Numéro de Carte</label>
+                    <input type="text" id="card_number" name="card_number" class="form-input" placeholder="1234 5678 9012 3456" maxlength="19">
+                </div>
+                
+                <div class="info-box">
+                    <i class="fas fa-info-circle"></i>
+                    <p>Après validation, vous recevrez un code de confirmation par SMS/Email.</p>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary btn-full">
+                        <i class="fas fa-credit-card"></i> Payer et S'inscrire
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-full" onclick="closeRegisterModal()">
+                        Annuler
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Modal pour voir les détails de l'inscription -->
+{% if user.is_authenticated %}
+<div id="registrationDetailsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Détails de l'Inscription</h2>
+            <span class="close" onclick="closeRegistrationDetailsModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="modal-tournoi-info">
+                <h3 id="detailsTournoiTitle"></h3>
+            </div>
+            
+            <div id="soloDetails" style="display: none;">
+                <div class="info-box" style="background: rgba(220, 53, 69, 0.1); border-left: 3px solid var(--primary-red);">
+                    <i class="fas fa-check-circle" style="color: var(--primary-red);"></i>
+                    <div>
+                        <p style="margin: 0; font-weight: 600;">Vous êtes inscrit à ce tournoi en mode Solo.</p>
+                        <p style="margin: 5px 0 0; font-size: 0.9rem;">Préparez-vous pour le tournoi !</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="equipeDetails" style="display: none;">
+                <div class="equipe-info-card">
+                    <div class="equipe-header">
+                        <h4 style="margin: 0; color: var(--text-white);">
+                            <i class="fas fa-users"></i> Informations de l'Équipe
+                        </h4>
+                    </div>
+                    
+                    <div class="equipe-code-section">
+                        <label style="display: block; color: var(--text-grey); margin-bottom: 8px; font-size: 0.9rem;">Code d'Invitation</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <div class="code-display" id="equipeCodeDisplay"></div>
+                            <button type="button" class="btn btn-secondary" onclick="copyEquipeCode()" id="copyCodeBtn">
+                                <i class="fas fa-copy"></i> Copier
+                            </button>
+                        </div>
+                        <small style="color: var(--text-grey); font-size: 0.85rem; display: block; margin-top: 8px;">
+                            <i class="fas fa-info-circle"></i> Partagez ce code avec vos coéquipiers pour qu'ils rejoignent l'équipe
+                        </small>
+                    </div>
+                    
+                    <div class="equipe-members-section">
+                        <h5 style="color: var(--text-white); margin-bottom: 15px;">
+                            <i class="fas fa-users"></i> Membres de l'Équipe
+                            <span id="membersCount" style="color: var(--text-grey); font-size: 0.9rem; font-weight: normal;"></span>
+                        </h5>
+                        <div id="membersList" class="members-list"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-actions" style="margin-top: 20px;">
+                <button type="button" class="btn btn-primary btn-full" onclick="closeRegistrationDetailsModal()">
+                    Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function switchTab(tabName) {
+    document.querySelectorAll('.tournament-section').forEach(section => {
+        section.style.display = 'none';
+    });
+    document.querySelectorAll('.tournament-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.getElementById(tabName).style.display = 'block';
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+}
+
+{% if user.is_authenticated %}
+let currentTournoiId = null;
+let currentTournoiMode = null;
+let currentTournoiType = null;
+let currentNbJoueurs = 1;
+
+function openRegisterModal(tournoiId, titre, prix, mode, typeTournoi, nbJoueursRequis, hasEquipes) {
+    console.log('=== DEBUG openRegisterModal ===');
+    console.log('Arguments reçus:', {tournoiId, titre, prix, mode, typeTournoi, nbJoueursRequis, hasEquipes});
+    
+    currentTournoiId = tournoiId;
+    currentTournoiMode = mode;
+    currentTournoiType = typeTournoi || '';
+    
+    // Convertir les valeurs en nombres
+    const prixNum = parseFloat(prix) || 0;
+    console.log('Prix converti:', prixNum);
+    
+    // CORRECTION : Les valeurs sont inversées dans les logs
+    // mode: 0, typeTournoi: "MJ", nbJoueursRequis: "solo"
+    // Il faut détecter le mode depuis typeTournoi si mode est un nombre
+    let modeCorrect = mode;
+    let typeTournoiCorrect = typeTournoi;
+    
+    // Si mode est 0 ou un nombre, et typeTournoi contient "MJ" ou "BR", les paramètres sont inversés
+    if ((mode === 0 || mode === '0' || typeof mode === 'number') && (typeTournoi === 'MJ' || typeTournoi === 'BR')) {
+        console.log('Détection inversion: mode est nombre, typeTournoi contient le mode');
+        modeCorrect = typeTournoi; // typeTournoi contient en fait le mode
+        typeTournoiCorrect = nbJoueursRequis; // nbJoueursRequis contient en fait le type
+    }
+    
+    // Déterminer le nombre de joueurs selon le mode
+    let nbJoueurs = 1;
+    const modeStr = String(modeCorrect).toUpperCase();
+    console.log('Mode corrigé:', modeStr, 'Type tournoi corrigé:', typeTournoiCorrect);
+    
+    if (modeStr === 'MJ' || modeStr === 'MULTIJOUEUR' || modeStr === '0') {
+        // Si mode est 0, c'est probablement MJ (première valeur du choix)
+        nbJoueurs = 5; // Multijoueur = toujours 5 joueurs
+        console.log('Mode MJ détecté -> nbJoueurs = 5');
+    } else if (modeStr === 'BR' || modeStr === 'BATTLE ROYALE' || modeStr === '1') {
+        // Si mode est 1, c'est probablement BR
+        const typeStr = String(typeTournoiCorrect || '').toLowerCase();
+        console.log('Mode BR détecté, type:', typeStr);
+        if (typeStr === 'duo') {
+            nbJoueurs = 2;
+            console.log('Type Duo -> nbJoueurs = 2');
+        } else if (typeStr === 'escouade') {
+            nbJoueurs = 4;
+            console.log('Type Escouade -> nbJoueurs = 4');
+        } else {
+            nbJoueurs = 1; // solo
+            console.log('Type Solo -> nbJoueurs = 1');
+        }
+    } else {
+        // Essayer de parser nbJoueursRequis directement
+        const parsed = parseInt(nbJoueursRequis);
+        if (!isNaN(parsed) && parsed > 0 && parsed <= 5) {
+            nbJoueurs = parsed;
+            console.log('nbJoueurs parsé depuis nbJoueursRequis:', nbJoueurs);
+        }
+    }
+    
+    currentNbJoueurs = nbJoueurs;
+    console.log('currentNbJoueurs final:', currentNbJoueurs);
+    
+    // S'assurer que currentTournoiId est défini AVANT tout
+    if (!currentTournoiId) {
+        currentTournoiId = tournoiId;
+    }
+    
+    document.getElementById('tournoiId').value = tournoiId;
+    document.getElementById('tournoiType').value = typeTournoi || '';
+    document.getElementById('tournoiTitle').textContent = titre;
+    
+    // Afficher le type de tournoi selon le mode
+    const typeDisplay = document.getElementById('tournoiTypeDisplay');
+    if (mode === 'MJ') {
+        typeDisplay.textContent = 'Multijoueur - 5 Joueurs';
+        typeDisplay.className = 'tournament-type-badge-modal tournament-type-mj';
+    } else if (mode === 'BR') {
+        const types = {
+            'solo': 'Battle Royale - Solo',
+            'duo': 'Battle Royale - Duo',
+            'escouade': 'Battle Royale - Escouade'
+        };
+        typeDisplay.textContent = types[typeTournoi] || 'Battle Royale - Solo';
+        typeDisplay.className = 'tournament-type-badge-modal tournament-type-' + (typeTournoi || 'solo');
+    }
+    
+    // Calculer et afficher le prix (EXACTEMENT la même structure HTML que dans les cartes)
+    const priceDiv = document.getElementById('tournoiPrice');
+    console.log('priceDiv trouvé:', priceDiv);
+    
+    if (prixNum > 0 && currentNbJoueurs > 0) {
+        // Calculer le prix par personne
+        const prixParPersonne = Math.round(prixNum / currentNbJoueurs);
+        const prixTotal = Math.round(prixNum);
+        console.log('Calculs:', {prixTotal, prixParPersonne, currentNbJoueurs});
+        
+        if (currentNbJoueurs === 1) {
+            // Solo : afficher uniquement le prix total
+            const html = 
+                '<div class="tournament-price-card">' +
+                '<div class="tournament-price-main">' +
+                '<span class="tournament-price-label">Participation:</span>' +
+                '<span class="tournament-price-value">' + 
+                prixTotal.toLocaleString('fr-FR') + ' FCFA</span>' +
+                '</div>' +
+                '</div>';
+            console.log('HTML Solo:', html);
+            if (priceDiv) {
+                priceDiv.innerHTML = html;
+            }
+        } else {
+            // Équipe : EXACTEMENT la même structure que dans les cartes
+            const html = 
+                '<div class="tournament-price-card">' +
+                '<div class="tournament-price-main">' +
+                '<span class="tournament-price-label">Participation:</span>' +
+                '<span class="tournament-price-value">' + 
+                prixTotal.toLocaleString('fr-FR') + ' FCFA</span>' +
+                '</div>' +
+                '<div class="tournament-price-detail">' +
+                '<span>' + prixParPersonne.toLocaleString('fr-FR') + ' FCFA par personne</span>' +
+                '<span class="tournament-price-separator">•</span>' +
+                '<span>' + currentNbJoueurs + ' joueurs</span>' +
+                '</div>' +
+                '</div>';
+            console.log('HTML Équipe:', html);
+            if (priceDiv) {
+                priceDiv.innerHTML = html;
+            } else {
+                console.error('priceDiv est null !');
+            }
+        }
+    } else {
+        console.log('Prix gratuit ou nbJoueurs invalide');
+        if (priceDiv) {
+            priceDiv.innerHTML = '<div class="tournament-price-card"><div class="tournament-price-main"><span class="tournament-price-value" style="color: var(--gold);">Gratuit</span></div></div>';
+        }
+    }
+    
+    // Afficher/masquer la section équipe
+    const teamSection = document.getElementById('teamSection');
+    
+    if (currentNbJoueurs > 1) {
+        teamSection.style.display = 'block';
+        switchTeamAction('create');
+        
+        // Mettre à jour le texte d'information (DYNAMIQUE selon currentNbJoueurs)
+        const infoText = document.getElementById('createTeamInfo');
+        if (infoText && prixNum > 0 && currentNbJoueurs > 0) {
+            const prixParPersonne = Math.round(prixNum / currentNbJoueurs);
+            // Utiliser currentNbJoueurs au lieu de hardcoder
+            infoText.textContent = 'Créez une équipe de ' + currentNbJoueurs + ' joueur' + (currentNbJoueurs > 1 ? 's' : '') + ' et partagez le code d\'invitation avec vos coéquipiers. Chacun paiera sa part (' + prixParPersonne.toLocaleString('fr-FR') + ' FCFA).';
+        }
+    } else {
+        teamSection.style.display = 'none';
+    }
+    
+    // Vérifier si déjà inscrit
+    fetch(`{% url 'tournois:check_registration' 0 %}`.replace('0', tournoiId))
+        .then(response => response.json())
+        .then(data => {
+            if (data.is_registered) {
+                alert('Vous êtes déjà inscrit à ce tournoi !');
+                return;
+            }
+            document.getElementById('registerModal').style.display = 'block';
+        });
+}
+
+
+function openRegistrationDetailsModal(tournoiId, titre) {
+    document.getElementById('detailsTournoiTitle').textContent = titre;
+    
+    fetch(`{% url 'tournois:check_registration' 0 %}`.replace('0', tournoiId))
+        .then(response => response.json())
+        .then(data => {
+            if (data.is_registered) {
+                if (data.equipe) {
+                    // Afficher les détails de l'équipe
+                    document.getElementById('soloDetails').style.display = 'none';
+                    document.getElementById('equipeDetails').style.display = 'block';
+                    
+                    // Afficher le code
+                    document.getElementById('equipeCodeDisplay').textContent = data.equipe.code;
+                    
+                    // Afficher les membres
+                    const membersList = document.getElementById('membersList');
+                    const membersCount = document.getElementById('membersCount');
+                    membersCount.textContent = `(${data.equipe.nb_membres}/${data.equipe.nb_requis})`;
+                    
+                    let membersHTML = '';
+                    data.equipe.membres.forEach((membre) => {
+                        const isMe = membre.is_me;
+                        const isCreateur = membre.is_createur;
+                        membersHTML += `
+                            <div class="member-item ${isMe ? 'member-me' : ''}">
+                                <div class="member-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="member-info">
+                                    <div class="member-name">
+                                        ${membre.nom} ${membre.prenom}
+                                        ${isMe ? '<span class="member-badge">Vous</span>' : ''}
+                                        ${isCreateur ? '<span class="member-badge createur-badge">Créateur</span>' : ''}
+                                    </div>
+                                    <div class="member-email">${membre.email}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    membersList.innerHTML = membersHTML;
+                } else {
+                    // Mode solo
+                    document.getElementById('soloDetails').style.display = 'block';
+                    document.getElementById('equipeDetails').style.display = 'none';
+                }
+                
+                document.getElementById('registrationDetailsModal').style.display = 'block';
+            } else {
+                alert('Vous n\'êtes pas inscrit à ce tournoi');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Une erreur est survenue');
+        });
+}
+
+function closeRegistrationDetailsModal() {
+    document.getElementById('registrationDetailsModal').style.display = 'none';
+}
+
+function copyEquipeCode() {
+    const code = document.getElementById('equipeCodeDisplay').textContent;
+    navigator.clipboard.writeText(code).then(function() {
+        const btn = document.getElementById('copyCodeBtn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> Copié !';
+        btn.style.background = 'var(--primary-red)';
+        setTimeout(function() {
+            btn.innerHTML = originalText;
+            btn.style.background = '';
+        }, 2000);
+    }).catch(function(err) {
+        alert('Erreur lors de la copie');
+    });
+}
+
+function switchTeamAction(action) {
+    document.getElementById('actionType').value = action;
+    
+    // Mettre à jour les boutons
+    document.getElementById('btn-create-team').classList.toggle('active', action === 'create');
+    document.getElementById('btn-join-team').classList.toggle('active', action === 'join');
+    
+    // Afficher/masquer les sections
+    document.getElementById('createTeamSection').style.display = action === 'create' ? 'block' : 'none';
+    document.getElementById('joinTeamSection').style.display = action === 'join' ? 'block' : 'none';
+    
+    // Gérer l'attribut required du champ code_invitation
+    const codeInput = document.getElementById('code_invitation');
+    if (codeInput) {
+        if (action === 'join') {
+            // En mode join, le code est requis
+            codeInput.setAttribute('required', 'required');
+        } else {
+            // En mode create, le code n'est pas requis
+            codeInput.removeAttribute('required');
+            codeInput.value = '';
+        }
+    }
+}
+
+function closeRegisterModal() {
+    document.getElementById('registerModal').style.display = 'none';
+    document.getElementById('registerForm').reset();
+    document.getElementById('phoneGroup').style.display = 'none';
+    document.getElementById('cardGroup').style.display = 'none';
+    document.getElementById('teamSection').style.display = 'none';
+    switchTeamAction('create');
+}
+
+// Afficher/masquer les champs selon la méthode de paiement
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentMethod = document.getElementById('payment_method');
+    if (paymentMethod) {
+        paymentMethod.addEventListener('change', function() {
+            const phoneGroup = document.getElementById('phoneGroup');
+            const cardGroup = document.getElementById('cardGroup');
+            
+            if (this.value === 'orange_money' || this.value === 'mtn_mobile' || this.value === 'moov_money') {
+                phoneGroup.style.display = 'block';
+                cardGroup.style.display = 'none';
+            } else if (this.value === 'carte_bancaire') {
+                phoneGroup.style.display = 'none';
+                cardGroup.style.display = 'block';
+            } else {
+                phoneGroup.style.display = 'none';
+                cardGroup.style.display = 'none';
+            }
+        });
+    }
+    
+    // Transformer le code d'invitation en majuscules
+    const codeInput = document.getElementById('code_invitation');
+    if (codeInput) {
+        codeInput.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+    }
+});
+
+function submitRegistration(event) {
+    event.preventDefault();
+    console.log('=== DEBUG submitRegistration ===');
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    // Vérifier que currentTournoiId est défini
+    if (!currentTournoiId) {
+        console.error('currentTournoiId n\'est pas défini ! Récupération depuis le formulaire...');
+        const tournoiIdInput = document.getElementById('tournoiId');
+        if (tournoiIdInput && tournoiIdInput.value) {
+            currentTournoiId = tournoiIdInput.value;
+            console.log('currentTournoiId récupéré depuis le formulaire:', currentTournoiId);
+        } else {
+            alert('Erreur: Impossible de déterminer le tournoi');
+            return false;
+        }
+    }
+    
+    // Vérifier le code d'invitation si on rejoint une équipe
+    const action = formData.get('action');
+    console.log('Action:', action);
+    
+    if (action === 'join') {
+        const code = formData.get('code_invitation');
+        console.log('Code reçu:', code);
+        if (!code || code.trim().length < 4) {
+            alert('Veuillez entrer un code d\'invitation valide (minimum 4 caractères)');
+            // Scroll vers le champ code et le focus
+            const codeInput = document.getElementById('code_invitation');
+            if (codeInput) {
+                codeInput.focus();
+                codeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return false;
+        }
+        // Normaliser le code en majuscules
+        formData.set('code_invitation', code.trim().toUpperCase());
+    } else {
+        // En mode create, s'assurer que le code n'est pas envoyé
+        formData.delete('code_invitation');
+    }
+    
+    // Vérifier la méthode de paiement
+    const paymentMethod = formData.get('payment_method');
+    if (!paymentMethod) {
+        alert('Veuillez sélectionner une méthode de paiement');
+        const paymentSelect = document.getElementById('payment_method');
+        if (paymentSelect) {
+            paymentSelect.focus();
+        }
+        return false;
+    }
+    
+    console.log('Envoi de la requête pour tournoi:', currentTournoiId);
+    
+    // Vérifier que currentTournoiId est bien défini
+    if (!currentTournoiId) {
+        console.error('currentTournoiId est null ! Récupération depuis le formulaire...');
+        const tournoiIdInput = document.getElementById('tournoiId');
+        if (tournoiIdInput && tournoiIdInput.value) {
+            currentTournoiId = tournoiIdInput.value;
+            console.log('currentTournoiId récupéré depuis le formulaire:', currentTournoiId);
+        } else {
+            alert('Erreur: Impossible de déterminer le tournoi');
+            return;
+        }
+    }
+    
+    const url = `{% url 'tournois:register' 0 %}`.replace('0', currentTournoiId);
+    console.log('URL:', url);
+    
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => {
+        console.log('Réponse reçue, status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Données reçues:', data);
+        if (data.success) {
+            let message = data.message;
+            if (data.code_invitation) {
+                message += '\n\nCode d\'invitation: ' + data.code_invitation + '\nPartagez ce code avec vos coéquipiers !';
+            }
+            alert(message);
+            closeRegisterModal();
+            location.reload();
+        } else {
+            alert('Erreur: ' + (data.error || 'Une erreur est survenue'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Une erreur est survenue lors de l\'inscription');
+    });
+}
+
+// Fermer les modals en cliquant en dehors
+window.onclick = function(event) {
+    const registerModal = document.getElementById('registerModal');
+    const detailsModal = document.getElementById('registrationDetailsModal');
+    
+    if (event.target == registerModal) {
+        closeRegisterModal();
+    }
+    if (event.target == detailsModal) {
+        closeRegistrationDetailsModal();
+    }
+}
+{% endif %}
+</script>
+
+<style>
+/* Responsive et améliorations visuelles */
+.tournament-tabs {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 40px;
+    border-bottom: 2px solid var(--medium-grey);
+    flex-wrap: wrap;
+}
+
+.tournament-tab {
+    background: none;
+    border: none;
+    padding: 15px 25px;
+    color: var(--text-grey);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tournament-tab:hover {
+    color: var(--text-white);
+}
+
+.tournament-tab.active {
+    color: var(--primary-red);
+    border-bottom-color: var(--primary-red);
+}
+
+.tournament-tab .badge {
+    background: var(--primary-red);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    margin-left: 5px;
+}
+
+/* Badges avec couleurs alternées */
+.section-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.section-badge-red {
+    background: var(--primary-red);
+    color: white;
+}
+
+.section-badge-orange {
+    background: var(--primary-orange);
+    color: white;
+}
+
+.section-badge-grey {
+    background: var(--text-grey);
+    color: white;
+}
+
+/* Type de tournoi */
+.tournament-type-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    margin-top: 10px;
+}
+
+.tournament-type-solo {
+    background: rgba(220, 53, 69, 0.2);
+    color: var(--primary-red);
+    border: 1px solid var(--primary-red);
+}
+
+.tournament-type-duo {
+    background: rgba(255, 107, 53, 0.2);
+    color: var(--primary-orange);
+    border: 1px solid var(--primary-orange);
+}
+
+.tournament-type-escouade {
+    background: rgba(255, 193, 7, 0.2);
+    color: var(--gold);
+    border: 1px solid var(--gold);
+}
+
+.tournament-type-mj {
+    background: rgba(0, 123, 255, 0.2);
+    color: #007bff;
+    border: 1px solid #007bff;
+}
+
+.tournament-type-badge-modal {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 10px 0;
+}
+
+/* Grid responsive */
+.tournaments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 30px;
+}
+
+.tournament-card {
+    background: var(--dark-grey);
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    border: 1px solid var(--medium-grey);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.tournament-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.tournament-card-past {
+    opacity: 0.7;
+}
+
+.tournament-banner {
+    position: relative;
+    background: linear-gradient(135deg, var(--primary-red), var(--primary-orange));
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.tournament-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.tournament-image-past {
+    opacity: 0.5;
+}
+
+.tournament-status {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.7);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: white;
+    z-index: 2;
+}
+
+.tournament-status i {
+    color: #4ade80;
+    font-size: 0.6rem;
+    margin-right: 5px;
+}
+
+.tournament-body {
+    padding: 20px;
+}
+
+.tournament-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-white);
+    margin-bottom: 10px;
+}
+
+.tournament-meta {
+    margin: 15px 0;
+}
+
+.tournament-meta-item {
+    color: var(--text-grey);
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+.tournament-meta-item span {
+    color: var(--text-white);
+    font-weight: 500;
+}
+
+.tournament-price {
+    color: var(--gold) !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+}
+
+.btn-full {
+    width: 100%;
+    margin-top: 15px;
+}
+
+.empty-message {
+    text-align: center;
+    color: var(--text-grey);
+    padding: 40px;
+    grid-column: 1 / -1;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.7);
+}
+
+.modal-content {
+    background-color: var(--primary-black);
+    margin: 3% auto;
+    padding: 0;
+    border: 1px solid var(--medium-grey);
+    border-radius: var(--card-radius);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    padding: 20px 30px;
+    border-bottom: 1px solid var(--medium-grey);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    background: var(--primary-black);
+    z-index: 10;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: var(--text-white);
+}
+
+.close {
+    color: var(--text-grey);
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: var(--text-white);
+}
+
+.modal-body {
+    padding: 20px 30px;
+}
+
+.modal-tournoi-info {
+    text-align: center;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--medium-grey);
+}
+
+.modal-tournoi-info h3 {
+    color: var(--text-white);
+    margin-bottom: 10px;
+}
+
+.modal-price {
+    margin-top: 10px;
+}
+
+.team-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.btn-team-action {
+    flex: 1;
+    padding: 12px;
+    background: var(--dark-grey);
+    border: 2px solid var(--medium-grey);
+    color: var(--text-grey);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 500;
+}
+
+.btn-team-action:hover {
+    border-color: var(--primary-red);
+    color: var(--text-white);
+}
+
+.btn-team-action.active {
+    background: var(--primary-red);
+    border-color: var(--primary-red);
+    color: white;
+}
+
+.info-box {
+    background: var(--dark-grey);
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    font-size: 0.9rem;
+    color: var(--text-grey);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.info-box i {
+    color: var(--primary-orange);
+    margin-top: 2px;
+}
+
+.modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* Responsive */
+/* Affichage du prix amélioré */
+.tournament-price-card {
+    background: var(--dark-grey);
+    border: 1px solid var(--medium-grey);
+    border-radius: 8px;
+    padding: 15px;
+    margin: 15px 0;
+}
+
+.tournament-price-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.tournament-price-label {
+    color: var(--text-grey);
+    font-size: 0.9rem;
+}
+
+.tournament-price-value {
+    color: var(--gold);
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.tournament-price-detail {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    color: var(--text-grey);
+    font-size: 0.85rem;
+    padding-top: 8px;
+    border-top: 1px solid var(--medium-grey);
+}
+
+.tournament-price-separator {
+    color: var(--text-grey);
+    opacity: 0.5;
+}
+
+/* Modal prix */
+.modal-price {
+    margin: 15px 0;
+    background: var(--dark-grey);
+    border: 1px solid var(--medium-grey);
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.modal-price-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.modal-price-label {
+    color: var(--text-grey);
+    font-size: 0.9rem;
+}
+
+.modal-price-value {
+    font-size: 1.1rem;
+    color: var(--gold);
+    font-weight: 600;
+}
+
+.modal-price-detail {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    color: var(--text-grey);
+    font-size: 0.85rem;
+    padding-top: 8px;
+    border-top: 1px solid var(--medium-grey);
+}
+
+/* Détails équipe */
+.equipe-info-card {
+    background: var(--dark-grey);
+    border: 1px solid var(--medium-grey);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.equipe-header {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--medium-grey);
+}
+
+.equipe-code-section {
+    margin-bottom: 25px;
+}
+
+.code-display {
+    background: var(--primary-black);
+    border: 2px solid var(--primary-red);
+    border-radius: 8px;
+    padding: 15px 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: var(--primary-red);
+    text-align: center;
+    flex: 1;
+    user-select: all;
+}
+
+.equipe-members-section {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid var(--medium-grey);
+}
+
+.members-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.member-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px;
+    background: var(--primary-black);
+    border-radius: 8px;
+    border: 1px solid var(--medium-grey);
+    transition: all 0.3s;
+}
+
+.member-item:hover {
+    border-color: var(--primary-red);
+    transform: translateX(5px);
+}
+
+.member-item.member-me {
+    background: rgba(220, 53, 69, 0.1);
+    border-color: var(--primary-red);
+}
+
+.member-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: var(--primary-red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.member-info {
+    flex: 1;
+}
+
+.member-name {
+    color: var(--text-white);
+    font-weight: 600;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.member-email {
+    color: var(--text-grey);
+    font-size: 0.85rem;
+}
+
+.member-badge {
+    background: var(--primary-red);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.createur-badge {
+    background: var(--gold);
+    color: var(--primary-black);
+}
+
+@media (max-width: 768px) {
+    .tournament-tabs {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .tournament-tab {
+        width: 100%;
+        justify-content: center;
+        border-bottom: 1px solid var(--medium-grey);
+        border-left: 3px solid transparent;
+    }
+    
+    .tournament-tab.active {
+        border-left-color: var(--primary-red);
+        border-bottom-color: var(--medium-grey);
+    }
+    
+    .tournaments-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 5% auto;
+    }
+    
+    .modal-body {
+        padding: 15px 20px;
+    }
+    
+    .team-actions {
+        flex-direction: column;
+    }
+    
+    .code-display {
+        font-size: 1.2rem;
+        letter-spacing: 2px;
+        padding: 12px 15px;
+    }
+    
+    .tournament-price-main {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+}
+</style>
+{% endblock %}

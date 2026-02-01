@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inscription - CODM Tracker{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-logo">
+                <div class="logo-icon">CT</div>
+                <div class="logo-text">CODM<span>Tracker</span></div>
+            </div>
+            <h1 class="auth-title">Créer un Compte</h1>
+            <p class="auth-subtitle">Rejoignez la communauté CODM Tracker</p>
+        </div>
+        
+        {% if not show_otp_form %}
+        <!-- ÉTAPE 1 : Informations personnelles -->
+        <div class="social-buttons">
+            <button class="btn-social btn-google" type="button">
+                <i class="fab fa-google"></i>
+                S'inscrire avec Google
+            </button>
+            <button class="btn-social btn-discord" type="button">
+                <i class="fab fa-discord"></i>
+                S'inscrire avec Discord
+            </button>
+        </div>
+        
+        <div class="auth-divider">
+            <span>ou</span>
+        </div>
+        
+        <form method="POST" action="{% url 'utilisateurs:signup' %}" id="step1Form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="step1">
+            
+            <div class="form-group">
+                <label class="form-label" for="nom">Nom</label>
+                <input type="text" id="nom" name="nom" class="form-input" placeholder="Votre nom" required value="{{ signup_data.nom|default:'' }}">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="prenom">Prénom</label>
+                <input type="text" id="prenom" name="prenom" class="form-input" placeholder="Votre prénom" required value="{{ signup_data.prenom|default:'' }}">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="email">Email</label>
+                <input type="email" id="email" name="email" class="form-input" placeholder="Entrez votre email" required value="{{ signup_data.email|default:'' }}">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="numero">Numéro de téléphone</label>
+                <input type="text" id="numero" name="numero" class="form-input" placeholder="Ex: +2250101120890" required value="{{ signup_data.numero|default:'' }}">
+                <small style="color: var(--text-grey); font-size: 0.85rem; display: block; margin-top: 5px;">Format: +225XXXXXXXXXX</small>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                <i class="fas fa-arrow-right"></i>
+                Suivant
+            </button>
+        </form>
+        {% else %}
+        <!-- ÉTAPE 2 : Code OTP + Mot de passe -->
+        <div style="margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                <div style="width: 30px; height: 30px; border-radius: 50%; background: var(--primary-red); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;">1</div>
+                <div style="flex: 1; height: 2px; background: var(--primary-red);"></div>
+                <div style="width: 30px; height: 30px; border-radius: 50%; background: var(--primary-red); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;">2</div>
+            </div>
+            <p style="text-align: center; color: var(--text-grey); font-size: 0.9rem;">Étape 2 sur 2</p>
+        </div>
+
+        <form method="POST" action="{% url 'utilisateurs:signup' %}" id="step2Form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="step2">
+            
+            <div class="form-group">
+                <p style="color: var(--text-grey); margin-bottom: 20px; text-align: center;">
+                    Un code de vérification a été envoyé à<br>
+                    <strong style="color: var(--primary-red);">{{ signup_data.email }}</strong>
+                </p>
+                <label class="form-label" for="code">Code de vérification</label>
+                <input type="text" id="code" name="code" class="form-input" placeholder="Entrez le code à 6 chiffres" required maxlength="6" pattern="[0-9]{6}" style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem;">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="password1">Mot de passe</label>
+                <input type="password" id="password1" name="password1" class="form-input" placeholder="Créez un mot de passe" required minlength="6">
+                <small style="color: var(--text-grey); font-size: 0.85rem; display: block; margin-top: 5px;">Minimum 6 caractères</small>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="password2">Confirmer le mot de passe</label>
+                <input type="password" id="password2" name="password2" class="form-input" placeholder="Confirmez votre mot de passe" required minlength="6">
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 15px;">
+                <i class="fas fa-check"></i>
+                Créer mon compte
+            </button>
+            
+            <form method="POST" action="{% url 'utilisateurs:resend_otp' %}" style="margin-top: 10px;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-secondary" style="width: 100%;">
+                    <i class="fas fa-redo"></i>
+                    Renvoyer le code
+                </button>
+            </form>
+        </form>
+        {% endif %}
+        
+        <div class="auth-footer">
+            {% if show_otp_form %}
+                <p><a href="{% url 'utilisateurs:signup' %}" style="color: var(--primary-red);">Retour à l'étape 1</a></p>
+            {% else %}
+                <p>Déjà un compte ? <a href="{% url 'utilisateurs:login' %}" style="color: var(--primary-red);">Se connecter</a></p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-focus sur le champ code OTP
+{% if show_otp_form %}
+document.addEventListener('DOMContentLoaded', function() {
+    const codeInput = document.getElementById('code');
+    if (codeInput) {
+        codeInput.focus();
+    }
+});
+{% endif %}
+
+// Validation du code OTP (uniquement des chiffres)
+const codeInput = document.getElementById('code');
+if (codeInput) {
+    codeInput.addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
+}
+</script>
+{% endblock %}

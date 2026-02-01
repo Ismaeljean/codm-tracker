@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Blog - CODM Tracker{% endblock %}
+{% block nav_blog %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+.blog-hero {
+    background: linear-gradient(135deg, rgba(255, 26, 26, 0.1) 0%, rgba(204, 0, 0, 0.1) 100%);
+    padding: 80px 0;
+    text-align: center;
+    border-bottom: 2px solid var(--primary-red);
+}
+
+.blog-hero h1 {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    font-family: var(--font-display);
+}
+
+.blog-hero p {
+    font-size: 1.2rem;
+    color: var(--text-grey);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.blog-container {
+    padding: 60px 0 100px;
+}
+
+.blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 40px;
+    margin-top: 50px;
+}
+
+.blog-card {
+    background: var(--gradient-card);
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid var(--medium-grey);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.blog-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--glow-red);
+    border-color: var(--primary-red);
+}
+
+.blog-image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 250px;
+    overflow: hidden;
+    background: var(--dark-grey);
+}
+
+.blog-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.blog-card:hover .blog-image-wrapper img {
+    transform: scale(1.1);
+}
+
+.blog-image-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-red) 0%, var(--dark-red) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.blog-body {
+    padding: 30px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.blog-category {
+    display: inline-block;
+    background: var(--gradient-red);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.blog-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: var(--text-white);
+    font-family: var(--font-heading);
+    line-height: 1.3;
+}
+
+.blog-excerpt {
+    color: var(--text-grey);
+    line-height: 1.7;
+    margin-bottom: 20px;
+    flex-grow: 1;
+    font-size: 0.95rem;
+}
+
+.blog-meta {
+    display: flex;
+    gap: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--medium-grey);
+    font-size: 0.85rem;
+    color: var(--text-dark);
+}
+
+.blog-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.blog-meta i {
+    color: var(--primary-red);
+}
+
+.blog-read-more {
+    margin-top: 15px;
+    color: var(--primary-red);
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.blog-read-more:hover {
+    color: var(--primary-orange);
+    gap: 12px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    grid-column: 1 / -1;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+}
+
+.empty-state p {
+    color: var(--text-grey);
+    font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+    .blog-hero h1 {
+        font-size: 2.5rem;
+    }
+    
+    .blog-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="blog-hero">
+    <div class="container">
+        <h1>Blog & <span class="highlight">Guides</span></h1>
+        <p>Actualités, guides stratégiques et astuces pour dominer dans Call of Duty Mobile</p>
+    </div>
+</div>
+
+<section class="blog-container">
+    <div class="container">
+        <div class="blog-grid">
+            {% for article in articles %}
+            <article class="blog-card">
+                <div class="blog-image-wrapper">
+                    {% if article.image %}
+                        <img src="{{ article.image.url }}" alt="{{ article.titre }}">
+                    {% else %}
+                        <div class="blog-image-placeholder">
+                            <i class="fas fa-newspaper"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="blog-body">
+                    <span class="blog-category">Article</span>
+                    <h3 class="blog-title">{{ article.titre }}</h3>
+                    <p class="blog-excerpt">
+                        {% if article.resume %}
+                            {{ article.resume }}
+                        {% else %}
+                            {{ article.contenu|truncatewords:35 }}
+                        {% endif %}
+                    </p>
+                    <div class="blog-meta">
+                        <span>
+                            <i class="fas fa-user"></i>
+                            Par {{ article.auteur.nom|default:"Admin" }} {{ article.auteur.prenom|default:"" }}
+                        </span>
+                        <span>
+                            <i class="fas fa-calendar"></i>
+                            {{ article.cree_le|date:"d M Y" }}
+                        </span>
+                    </div>
+                    <a href="{% url 'articles:article_detail' article.slug %}" class="blog-read-more">
+                        Lire la suite <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </article>
+            {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-newspaper"></i>
+                <p>Aucun article disponible pour le moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

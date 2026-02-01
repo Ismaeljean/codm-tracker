@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Modifier mon Profil - CODM Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <div class="page-breadcrumb">
+            <a href="/">Accueil</a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="{% url 'profils:profil' %}">Profil</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Modifier</span>
+        </div>
+        <h1 class="page-title">Modifier mon <span class="highlight">Profil</span></h1>
+    </div>
+</div>
+
+<section style="padding: 40px 0 100px;">
+    <div class="container">
+        <div style="max-width: 700px; margin: 0 auto;">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Informations du Profil</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% url 'profils:edit_profil' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="uid_codm">UID CODM</label>
+                            <input type="text" id="uid_codm" name="uid_codm" class="form-input" value="{{ profil.uid_codm|default:'' }}" placeholder="Votre UID Call of Duty Mobile">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="avatar">Image de Profil</label>
+                            <div id="avatar-preview-container" style="margin-bottom: 15px;">
+                                {% if profil.avatar %}
+                                <img id="avatar-preview" src="{{ profil.avatar.url }}" alt="Avatar actuel" style="max-width: 150px; max-height: 150px; width: 150px; height: 150px; border-radius: 50%; border: 2px solid var(--primary-red); object-fit: cover; display: block;">
+                                {% else %}
+                                <img id="avatar-preview" src="" alt="Aperçu" style="max-width: 150px; max-height: 150px; width: 150px; height: 150px; border-radius: 50%; border: 2px solid var(--primary-red); object-fit: cover; display: none;">
+                                {% endif %}
+                            </div>
+                            <input type="file" id="avatar" name="avatar" class="form-input" accept="image/*">
+                            <small style="color: var(--text-grey); font-size: 0.85rem; display: block; margin-top: 5px;">Formats acceptés: JPG, PNG, GIF. Taille max: 5MB</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="niveau">Niveau</label>
+                            <input type="number" id="niveau" name="niveau" class="form-input" value="{{ profil.niveau }}" min="1" max="400" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="rang_mj">Rang Multijoueur</label>
+                            <select id="rang_mj" name="rang_mj" class="form-input" required>
+                                <option value="Recrue" {% if profil.rang_mj == 'Recrue' %}selected{% endif %}>Recrue</option>
+                                <option value="Vétéran" {% if profil.rang_mj == 'Vétéran' %}selected{% endif %}>Vétéran</option>
+                                <option value="Élite" {% if profil.rang_mj == 'Élite' %}selected{% endif %}>Élite</option>
+                                <option value="Pro" {% if profil.rang_mj == 'Pro' %}selected{% endif %}>Pro</option>
+                                <option value="Maître" {% if profil.rang_mj == 'Maître' %}selected{% endif %}>Maître</option>
+                                <option value="Grand Maître" {% if profil.rang_mj == 'Grand Maître' %}selected{% endif %}>Grand Maître</option>
+                                <option value="Légendaire" {% if profil.rang_mj == 'Légendaire' %}selected{% endif %}>Légendaire</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="rang_br">Rang Battle Royale</label>
+                            <select id="rang_br" name="rang_br" class="form-input" required>
+                                <option value="Bronze" {% if profil.rang_br == 'Bronze' %}selected{% endif %}>Bronze</option>
+                                <option value="Argent" {% if profil.rang_br == 'Argent' %}selected{% endif %}>Argent</option>
+                                <option value="Or" {% if profil.rang_br == 'Or' %}selected{% endif %}>Or</option>
+                                <option value="Platine" {% if profil.rang_br == 'Platine' %}selected{% endif %}>Platine</option>
+                                <option value="Diamant" {% if profil.rang_br == 'Diamant' %}selected{% endif %}>Diamant</option>
+                                <option value="Maître" {% if profil.rang_br == 'Maître' %}selected{% endif %}>Maître</option>
+                                <option value="Grand Maître" {% if profil.rang_br == 'Grand Maître' %}selected{% endif %}>Grand Maître</option>
+                                <option value="Légendaire" {% if profil.rang_br == 'Légendaire' %}selected{% endif %}>Légendaire</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="bio">Bio</label>
+                            <textarea id="bio" name="bio" class="form-input" rows="4" placeholder="Parlez-nous de vous...">{{ profil.bio|default:'' }}</textarea>
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button type="submit" class="btn btn-primary" style="flex: 1;">
+                                <i class="fas fa-save"></i> Enregistrer les modifications
+                            </button>
+                            <a href="{% url 'profils:profil' %}" class="btn btn-secondary" style="flex: 1; text-align: center;">
+                                Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const avatarInput = document.getElementById('avatar');
+    const avatarPreview = document.getElementById('avatar-preview');
+    
+    if (avatarInput && avatarPreview) {
+        avatarInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Vérifier la taille du fichier (5MB max)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Le fichier est trop volumineux. Taille maximum: 5MB');
+                    this.value = '';
+                    return;
+                }
+                
+                // Vérifier le type de fichier
+                if (!file.type.match('image.*')) {
+                    alert('Veuillez sélectionner une image valide (JPG, PNG, GIF)');
+                    this.value = '';
+                    return;
+                }
+                
+                // Créer un FileReader pour prévisualiser
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    avatarPreview.src = e.target.result;
+                    avatarPreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                // Si aucun fichier sélectionné, garder l'image actuelle si elle existe
+                {% if profil.avatar %}
+                avatarPreview.src = "{{ profil.avatar.url }}";
+                avatarPreview.style.display = 'block';
+                {% else %}
+                avatarPreview.style.display = 'none';
+                {% endif %}
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

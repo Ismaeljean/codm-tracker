@@ -1,0 +1,400 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Notifications - Forum CODM Tracker{% endblock %}
+{% block nav_forum %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+.notifications-container {
+    padding: 60px 0 100px;
+}
+
+.notifications-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.notifications-header h1 {
+    font-size: 2.5rem;
+    font-family: var(--font-display);
+    color: var(--text-white);
+}
+
+.notifications-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.notification-badge {
+    background: var(--gradient-red);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.notification-item {
+    background: var(--gradient-card);
+    border-radius: var(--card-radius);
+    padding: 20px 25px;
+    border: 2px solid var(--medium-grey);
+    transition: all 0.3s ease;
+    position: relative;
+    cursor: pointer;
+}
+
+.notification-item:hover {
+    border-color: var(--primary-red);
+    transform: translateX(5px);
+}
+
+.notification-item.non-lue {
+    border-color: var(--primary-red);
+    background: linear-gradient(135deg, rgba(255, 26, 26, 0.1) 0%, var(--gradient-card) 100%);
+}
+
+.notification-item.non-lue::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--gradient-red);
+    border-radius: var(--card-radius) 0 0 var(--card-radius);
+}
+
+.notification-header-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    gap: 15px;
+}
+
+.notification-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-white);
+    font-family: var(--font-heading);
+    flex: 1;
+}
+
+.notification-date {
+    color: var(--text-grey);
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.notification-message {
+    color: var(--text-grey);
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.notification-type {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-top: 10px;
+}
+
+.type-nouveau_commentaire,
+.type-reponse_commentaire {
+    background: var(--gradient-orange);
+    color: white;
+}
+
+.type-like_post,
+.type-like_commentaire {
+    background: var(--gradient-red);
+    color: white;
+}
+
+.type-nouveau_post_communaute {
+    background: var(--gradient-gold);
+    color: var(--primary-black);
+}
+
+.type-match_gagne,
+.type-tournoi_gagne {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+}
+
+.type-match_perdu {
+    background: var(--gradient-red);
+    color: white;
+}
+
+.empty-notifications {
+    text-align: center;
+    padding: 80px 20px;
+    background: var(--gradient-card);
+    border-radius: var(--card-radius);
+    border: 1px solid var(--medium-grey);
+}
+
+.empty-notifications i {
+    font-size: 4rem;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+}
+
+.empty-notifications h3 {
+    color: var(--text-white);
+    margin-bottom: 15px;
+}
+
+.empty-notifications p {
+    color: var(--text-grey);
+}
+
+@media (max-width: 768px) {
+    .notifications-container {
+        padding: 40px 0 60px;
+    }
+    
+    .notifications-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .notifications-header h1 {
+        font-size: 2rem;
+    }
+    
+    .notifications-actions {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .notifications-actions .btn {
+        width: 100%;
+    }
+    
+    .notification-item {
+        padding: 15px 20px;
+    }
+    
+    .notification-header-item {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .notification-title {
+        font-size: 1rem;
+    }
+    
+    .notification-message {
+        font-size: 0.9rem;
+    }
+    
+    .notification-item > div:last-child {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+    
+    .notification-item > div:last-child .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .notifications-header h1 {
+        font-size: 1.75rem;
+    }
+    
+    .notification-badge {
+        font-size: 0.8rem;
+        padding: 6px 12px;
+    }
+    
+    .notification-item {
+        padding: 12px 15px;
+    }
+    
+    .notification-type {
+        font-size: 0.7rem;
+        padding: 3px 8px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="notifications-container">
+    <div class="container">
+        <div class="notifications-header">
+            <h1>Mes <span class="highlight">Notifications</span></h1>
+            <div class="notifications-actions">
+                {% if non_lues > 0 %}
+                <span class="notification-badge">{{ non_lues }} non lue(s)</span>
+                {% endif %}
+                {% if non_lues > 0 %}
+                <button onclick="marquerToutesLues()" class="btn btn-outline btn-sm">
+                    <i class="fas fa-check-double"></i> Tout marquer comme lu
+                </button>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if notifications %}
+        <div class="notifications-list">
+            {% for notification in notifications %}
+            <div class="notification-item {% if not notification.lu %}non-lue{% endif %}" 
+                 {% if notification.lien %}onclick="handleNotificationClick({{ notification.id }}, '{{ notification.lien }}')"{% else %}onclick="marquerLue({{ notification.id }})"{% endif %}>
+                <div class="notification-header-item">
+                    <div class="notification-title">{{ notification.titre }}</div>
+                    <div class="notification-date">
+                        <i class="fas fa-clock"></i> {{ notification.date_creation|timesince }} ago
+                    </div>
+                </div>
+                <div class="notification-message">{{ notification.message }}</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; flex-wrap: wrap; gap: 10px;">
+                    <span class="notification-type type-{{ notification.type_notification }}">
+                        {{ notification.get_type_notification_display }}
+                    </span>
+                    {% if notification.lien %}
+                    <a href="{{ notification.lien }}" class="btn btn-sm btn-outline" onclick="event.stopPropagation(); handleNotificationClick({{ notification.id }}, '{{ notification.lien }}'); return false;" style="font-size: 0.8rem; padding: 5px 12px;">
+                        <i class="fas fa-external-link-alt"></i> Voir le post
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if notifications.has_other_pages %}
+            <div class="pagination" style="margin-top: 40px;">
+                {% if notifications.has_previous %}
+                    <a href="?page=1" aria-label="Première page">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                    <a href="?page={{ notifications.previous_page_number }}" aria-label="Page précédente">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                {% endif %}
+                
+                {% for num in notifications.paginator.page_range %}
+                    {% if notifications.number == num %}
+                        <span class="active">{{ num }}</span>
+                    {% elif num > notifications.number|add:'-3' and num < notifications.number|add:'3' %}
+                        <a href="?page={{ num }}">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if notifications.has_next %}
+                    <a href="?page={{ notifications.next_page_number }}" aria-label="Page suivante">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                    <a href="?page={{ notifications.paginator.num_pages }}" aria-label="Dernière page">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-notifications">
+            <i class="fas fa-bell-slash"></i>
+            <h3>Aucune notification</h3>
+            <p>Vous n'avez aucune notification pour le moment.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function marquerLue(notificationId) {
+    const csrftoken = getCookie('csrftoken');
+    fetch(`/forum/notifications/${notificationId}/marquer-lue/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const item = document.querySelector(`.notification-item[onclick*="${notificationId}"]`);
+            if (item) {
+                item.classList.remove('non-lue');
+            }
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function handleNotificationClick(notificationId, lien) {
+    // Marquer comme lu
+    marquerLue(notificationId);
+    // Rediriger vers le lien après un court délai pour permettre la requête AJAX
+    setTimeout(() => {
+        window.location.href = lien;
+    }, 100);
+}
+
+function marquerToutesLues() {
+    const csrftoken = getCookie('csrftoken');
+    fetch('/forum/notifications/marquer-toutes-lues/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.querySelectorAll('.notification-item').forEach(item => {
+                item.classList.remove('non-lue');
+            });
+            const badge = document.querySelector('.notification-badge');
+            if (badge) {
+                badge.remove();
+            }
+            location.reload();
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>
+{% endblock %}

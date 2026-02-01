@@ -1,0 +1,456 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ produit.nom }} - Boutique CODM Tracker{% endblock %}
+{% block nav_boutique %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================= */
+    /* HERO AVEC TITRE + TRAIT ROUGE EN BAS        */
+    /* ============================================= */
+    .product-hero {
+        background: linear-gradient(135deg, rgba(255, 26, 26, 0.08) 0%, rgba(204, 0, 0, 0.08) 100%);
+        padding: 80px 0 60px;
+        text-align: center;
+        border-bottom: 2px solid var(--primary-red);
+    }
+
+    .product-hero h1 {
+        font-size: 3.5rem;
+        margin-bottom: 15px;
+        font-family: var(--font-display);
+    }
+
+    .product-hero h1 .highlight {
+        color: var(--primary-red);
+    }
+
+    .product-detail-container {
+        padding: 60px 0 100px;
+    }
+
+    .back-button {
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .back-btn {
+        background: var(--gradient-card);
+        border: 1px solid var(--medium-grey);
+        color: var(--text-white);
+        padding: 12px 24px;
+        border-radius: var(--border-radius);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+
+    .back-btn:hover {
+        border-color: var(--primary-red);
+        color: var(--primary-red);
+        transform: translateX(-5px);
+    }
+
+    .product-detail-card {
+        background: var(--gradient-card);
+        border-radius: var(--card-radius);
+        padding: 40px;
+        border: 1px solid var(--medium-grey);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 50px;
+    }
+
+    .product-image-section {
+        position: relative;
+    }
+
+    .product-main-image-wrapper {
+        width: 100%;
+        height: 500px;
+        border-radius: var(--card-radius);
+        overflow: hidden;
+        background: var(--dark-grey);
+        border: 2px solid var(--primary-red);
+        position: relative;
+    }
+
+    .product-main-image-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .product-image-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, var(--primary-red) 0%, var(--dark-red) 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        color: rgba(255, 255, 255, 0.3);
+    }
+
+    .promotion-badge-large {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: var(--gradient-red);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 30px;
+        font-size: 1rem;
+        font-weight: 700;
+        z-index: 10;
+        box-shadow: 0 4px 12px rgba(255, 26, 26, 0.5);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .product-info-section h1 {
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+        color: var(--text-white);
+        font-family: var(--font-heading);
+    }
+
+    .product-description {
+        color: var(--text-grey);
+        line-height: 1.8;
+        margin-bottom: 30px;
+        font-size: 1.05rem;
+    }
+
+    .product-price-section {
+        margin-bottom: 30px;
+        padding: 25px;
+        background: rgba(255, 26, 26, 0.1);
+        border-radius: var(--border-radius);
+        border: 1px solid var(--primary-red);
+    }
+
+    .price-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .unit-price {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary-red);
+        font-family: var(--font-display);
+    }
+
+    .unit-price-old {
+        font-size: 1.5rem;
+        color: var(--text-grey);
+        text-decoration: line-through;
+        font-weight: 500;
+    }
+
+    .price-discount {
+        font-size: 1.1rem;
+        color: var(--primary-orange);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .total-price {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid var(--medium-grey);
+        font-size: 1.3rem;
+        color: var(--text-white);
+    }
+
+    .total-price span {
+        color: var(--primary-orange);
+        font-weight: 700;
+    }
+
+    .stock-info {
+        margin-bottom: 25px;
+        padding: 15px;
+        background: var(--dark-grey);
+        border-radius: var(--border-radius);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 600;
+    }
+
+    .stock-info.in-stock {
+        color: var(--primary-orange);
+        border: 1px solid var(--primary-orange);
+    }
+
+    .stock-info.low-stock {
+        color: var(--primary-orange);
+        border: 1px solid var(--primary-orange);
+    }
+
+    .stock-info.out-of-stock {
+        color: var(--primary-red);
+        border: 1px solid var(--primary-red);
+    }
+
+    .quantity-selector {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+
+    .quantity-btn {
+        width: 45px;
+        height: 45px;
+        background: var(--gradient-red);
+        border: none;
+        border-radius: var(--border-radius);
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .quantity-btn:hover:not(:disabled) {
+        box-shadow: var(--glow-red);
+        transform: scale(1.1);
+    }
+
+    .quantity-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .quantity-input {
+        width: 100px;
+        height: 45px;
+        background: var(--dark-grey);
+        border: 2px solid var(--medium-grey);
+        border-radius: var(--border-radius);
+        color: var(--text-white);
+        text-align: center;
+        font-size: 1.2rem;
+        font-weight: 700;
+        font-family: var(--font-display);
+    }
+
+    .quantity-input:focus {
+        outline: none;
+        border-color: var(--primary-red);
+    }
+
+    .add-to-cart-btn {
+        width: 100%;
+        padding: 18px;
+        background: var(--gradient-red);
+        border: none;
+        border-radius: var(--border-radius);
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .add-to-cart-btn:hover:not(:disabled) {
+        box-shadow: var(--glow-red);
+        transform: translateY(-2px);
+    }
+
+    .add-to-cart-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    @media (max-width: 968px) {
+        .product-detail-card {
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        .product-main-image-wrapper {
+            height: 350px;
+        }
+
+        .product-hero h1 {
+            font-size: 2.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero avec trait rouge en bas -->
+<div class="product-hero">
+    <div class="container">
+        <h1>{{ produit.nom }} <span class="highlight"></span></h1>
+    </div>
+</div>
+
+<section class="product-detail-container">
+    <div class="container">
+        <div class="back-button">
+            <a href="javascript:history.back()" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+                Retour
+            </a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'boutique:panier' %}" class="btn btn-outline"
+                style="position: relative; padding: 12px 24px; display: flex; align-items: center; gap: 10px; text-decoration: none;">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Panier</span>
+                {% if cart_count > 0 %}
+                <span
+                    style="position: absolute; top: -8px; right: -8px; background: var(--primary-red); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; box-shadow: 0 2px 8px rgba(255, 26, 26, 0.5);">
+                    {{ cart_count }}
+                </span>
+                {% endif %}
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="product-detail-card">
+            <div class="product-image-section">
+                <div class="product-main-image-wrapper">
+                    {% if produit.image %}
+                    <img src="{{ produit.image.url }}" alt="{{ produit.nom }}">
+                    {% else %}
+                    <div class="product-image-placeholder">
+                        <i class="fas fa-image"></i>
+                        <span style="font-size: 1rem; margin-top: 15px;">Image non disponible</span>
+                    </div>
+                    {% endif %}
+
+                    {% if produit.est_en_promotion %}
+                    <span class="promotion-badge-large">
+                        <i class="fas fa-tag"></i> PROMOTION
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="product-info-section">
+                <h1>{{ produit.nom }}</h1>
+
+                {% if produit.description %}
+                <p class="product-description">{{ produit.description }}</p>
+                {% endif %}
+
+                <div class="product-price-section">
+                    <div class="price-container">
+                        {% if promo_data %}
+                        <div class="unit-price" id="unit-price">{{ promo_data.prix_reduit|floatformat:0 }} XOF</div>
+                        <div class="unit-price-old">{{ promo_data.prix_normal|floatformat:0 }} XOF</div>
+                        <div class="price-discount">
+                            <i class="fas fa-percentage"></i>
+                            Économisez {{ promo_data.economie|floatformat:0 }} XOF
+                            ({{ promo_data.pourcentage }}% de réduction)
+                        </div>
+                        {% else %}
+                        <div class="unit-price" id="unit-price">{{ produit.prix_actuel|floatformat:0 }} XOF</div>
+                        {% endif %}
+                    </div>
+                    <div class="total-price" id="total-price" style="display: none;">
+                        Total: <span id="total-amount">0</span> XOF
+                    </div>
+                </div>
+
+                <div
+                    class="stock-info {% if produit.stock > 10 %}in-stock{% elif produit.stock > 0 %}low-stock{% else %}out-of-stock{% endif %}">
+                    <i
+                        class="fas fa-{% if produit.stock > 10 %}check-circle{% elif produit.stock > 0 %}exclamation-triangle{% else %}times-circle{% endif %}"></i>
+                    <span>
+                        {% if produit.stock > 10 %}
+                        En stock ({{ produit.stock }} disponibles)
+                        {% elif produit.stock > 0 %}
+                        Stock faible ({{ produit.stock }} disponibles)
+                        {% else %}
+                        Rupture de stock
+                        {% endif %}
+                    </span>
+                </div>
+
+                {% if user.is_authenticated %}
+                <div class="quantity-selector">
+                    <input type="number" id="quantity" class="quantity-input" value="1" min="1"
+                        max="{{ produit.stock }}" onchange="updatePrice()">
+                </div>
+
+                <form method="post" action="{% url 'boutique:ajouter_au_panier' produit.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantite" id="quantiteHidden" value="1">
+                    <button type="submit" class="add-to-cart-btn"
+                        onclick="document.getElementById('quantiteHidden').value=document.getElementById('quantity').value;"
+                        {% if not produit.stock %}disabled{% endif %}>
+                        <i class="fas fa-cart-plus"></i>
+                        Ajouter au panier
+                    </button>
+                </form>
+                {% else %}
+                <div
+                    style="padding: 20px; background: rgba(255, 26, 26, 0.1); border-radius: var(--border-radius); border: 1px solid var(--primary-red); text-align: center;">
+                    <p style="color: var(--text-white); margin-bottom: 15px;">Vous devez être connecté pour ajouter des
+                        produits au panier</p>
+                    <a href="{% url 'utilisateurs:login' %}?next={{ request.path }}" class="btn btn-primary"
+                        style="display: inline-block;">
+                        <i class="fas fa-sign-in-alt"></i> Se connecter
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const unitPrice = {{ produit.prix_actuel }};
+    const maxStock = {{ produit.stock }};
+
+    function updatePrice() {
+        const input = document.getElementById('quantity');
+        const quantity = parseInt(input.value) || 1;
+        const total = unitPrice * quantity;
+
+        document.getElementById('total-amount').textContent = total.toLocaleString('fr-FR', { maximumFractionDigits: 0 });
+
+        if (quantity > 1) {
+            document.getElementById('total-price').style.display = 'block';
+        } else {
+            document.getElementById('total-price').style.display = 'none';
+        }
+    }
+
+    // Initialiser au chargement
+    document.addEventListener('DOMContentLoaded', function () {
+        updatePrice();
+    });
+</script>
+{% endblock %}

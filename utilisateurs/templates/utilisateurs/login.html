@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Connexion - CODM Tracker{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-logo">
+                <div class="logo-icon">CT</div>
+                <div class="logo-text">CODM<span>Tracker</span></div>
+            </div>
+            <h1 class="auth-title">Connexion</h1>
+            <p class="auth-subtitle">Accédez à votre compte pour continuer</p>
+        </div>
+        
+        <div class="social-buttons">
+            <button class="btn-social btn-google">
+                <i class="fab fa-google"></i>
+                Continuer avec Google
+            </button>
+            <button class="btn-social btn-discord">
+                <i class="fab fa-discord"></i>
+                Continuer avec Discord
+            </button>
+        </div>
+        
+        <div class="auth-divider">
+            <span>ou</span>
+        </div>
+        
+        <form method="POST" action="{% url 'utilisateurs:login' %}">
+            {% csrf_token %}
+            {% if next %}
+                <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
+            
+            <div class="form-group">
+                <label class="form-label" for="identifiant">Email ou Numéro de téléphone</label>
+                <input type="text" id="identifiant" name="identifiant" class="form-input" placeholder="Entrez votre email ou numéro" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="password">Mot de passe</label>
+                <input type="password" id="password" name="password" class="form-input" placeholder="Entrez votre mot de passe" required>
+            </div>
+            
+            <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="form-check">
+                    <input type="checkbox" id="remember" name="remember">
+                    <label for="remember" style="color: var(--text-grey); font-size: 0.9rem;">Se souvenir de moi</label>
+                </div>
+                <a href="{% url 'utilisateurs:forgot_password' %}" style="color: var(--primary-red); font-size: 0.9rem;">Mot de passe oublié ?</a>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                <i class="fas fa-sign-in-alt"></i>
+                Se Connecter
+            </button>
+        </form>
+        
+        <div class="auth-footer">
+            <p>Pas encore de compte ? <a href="{% url 'utilisateurs:signup' %}">Créer un compte</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block nav_accueil %}active{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-content">
+        <div class="hero-badge">
+            <i class="fas fa-bolt"></i>
+            Plateforme #1 des joueurs CODM
+        </div>
+        <h1 class="hero-title">
+            Dominez le <span class="highlight">Champ de Bataille</span>
+        </h1>
+        <p class="hero-subtitle">
+            Suivez vos statistiques en temps réel, analysez vos performances, participez à des tournois et grimpez dans le classement mondial. Rejoignez la communauté des champions.
+        </p>
+        <div class="hero-buttons">
+            {% if not user.is_authenticated %}
+            <a href="{% url 'utilisateurs:signup' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-rocket"></i>
+                Commencer Gratuitement
+            </a>
+            {% endif %}
+            <a href="{% url 'tournois:tournaments' %}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-trophy"></i>
+                Voir les Tournois
+            </a>
+        </div>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <span class="hero-stat-value">150K+</span>
+                <span class="hero-stat-label">Joueurs Actifs</span>
+            </div>
+            <div class="hero-stat">
+                <span class="hero-stat-value">2.5M+</span>
+                <span class="hero-stat-label">Parties Analysées</span>
+            </div>
+            <div class="hero-stat">
+                <span class="hero-stat-value">500+</span>
+                <span class="hero-stat-label">Tournois Organisés</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="features" id="features">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-badge">Fonctionnalités</span>
+            <h2 class="section-title">Tout ce dont vous avez <span class="highlight">besoin</span></h2>
+            <p class="section-desc">Des outils puissants pour suivre votre progression et devenir un meilleur joueur</p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h3 class="feature-title">Statistiques Détaillées</h3>
+                <p class="feature-desc">Analysez vos performances en Battle Royale et Multijoueur avec des statistiques complètes : K/D, victoires, précision et bien plus.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <h3 class="feature-title">Classements Mondiaux</h3>
+                <p class="feature-desc">Comparez-vous aux meilleurs joueurs du monde et grimpez dans le classement grâce à vos performances.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+                <h3 class="feature-title">Tournois Esport</h3>
+                <p class="feature-desc">Participez à des compétitions officielles et remportez des récompenses exclusives. Montrez votre talent !</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-newspaper"></i>
+                </div>
+                <h3 class="feature-title">Blog & Guides</h3>
+                <p class="feature-desc">Découvrez les dernières actualités, guides stratégiques et astuces pour améliorer votre gameplay.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="feature-title">Communauté Active</h3>
+                <p class="feature-desc">Rejoignez une communauté passionnée de joueurs, partagez vos astuces et trouvez des coéquipiers.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-medal"></i>
+                </div>
+                <h3 class="feature-title">Badges & Récompenses</h3>
+                <p class="feature-desc">Débloquez des badges exclusifs en atteignant des objectifs et montrez-les sur votre profil.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section" style="background: linear-gradient(135deg, rgba(255, 26, 26, 0.1) 0%, rgba(255, 102, 0, 0.1) 100%); border-top: 1px solid var(--medium-grey); border-bottom: 1px solid var(--medium-grey);">
+    <div class="container">
+        <div style="text-align: center; max-width: 800px; margin: 0 auto;">
+            <h2 class="section-title" style="margin-bottom: 20px;">Prêt à devenir <span class="highlight">Légendaire</span> ?</h2>
+            <p class="section-desc" style="margin-bottom: 40px;">Rejoignez des milliers de joueurs qui utilisent CODM Tracker pour améliorer leur gameplay et atteindre le rang Légendaire.</p>
+            <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                {% if not user.is_authenticated %}
+                <a href="{% url 'utilisateurs:signup' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-user-plus"></i>
+                    Créer un Compte
+                </a>
+                {% endif %}
+                <a href="{% url 'statistiques:classements' %}" class="btn btn-orange btn-lg">
+                    <i class="fas fa-crown"></i>
+                    Voir les Classements
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section style="background: var(--primary-black);">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-badge">Témoignages</span>
+            <h2 class="section-title">Ce que disent nos <span class="highlight">joueurs</span></h2>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--gradient-red); display: flex; align-items: center; justify-content: center; font-weight: bold;">SK</div>
+                    <div>
+                        <div style="font-weight: 600;">SniperKing_FR</div>
+                        <div style="color: var(--text-grey); font-size: 0.85rem;">Rang Légendaire</div>
+                    </div>
+                </div>
+                <p class="feature-desc">"Grâce à CODM Tracker, j'ai pu analyser mes faiblesses et améliorer mon K/D de 1.2 à 3.5 en quelques mois. Indispensable !"</p>
+            </div>
+            
+            <div class="feature-card">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--gradient-orange); display: flex; align-items: center; justify-content: center; font-weight: bold;">GS</div>
+                    <div>
+                        <div style="font-weight: 600;">GamerStorm</div>
+                        <div style="color: var(--text-grey); font-size: 0.85rem;">Champion Tournoi</div>
+                    </div>
+                </div>
+                <p class="feature-desc">"Les tournois organisés sur la plateforme sont super bien gérés. J'ai gagné plusieurs compétitions et rencontré des joueurs incroyables."</p>
+            </div>
+            
+            <div class="feature-card">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--gradient-gold); display: flex; align-items: center; justify-content: center; font-weight: bold; color: black;">MP</div>
+                    <div>
+                        <div style="font-weight: 600;">MasterPro_TN</div>
+                        <div style="color: var(--text-grey); font-size: 0.85rem;">Rang Grand Maître</div>
+                    </div>
+                </div>
+                <p class="feature-desc">"L'interface est magnifique et les guides du blog m'ont aidé à améliorer ma stratégie et mon style de jeu."</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

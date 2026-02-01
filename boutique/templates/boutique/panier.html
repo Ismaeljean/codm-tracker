@@ -1,0 +1,605 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Panier - Boutique CODM Tracker{% endblock %}
+{% block nav_boutique %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero section avec trait rouge en bas comme la page blog */
+    .cart-hero {
+        background: linear-gradient(135deg, rgba(255, 26, 26, 0.08) 0%, rgba(204, 0, 0, 0.08) 100%);
+        padding: 80px 0 60px;
+        text-align: center;
+        border-bottom: 2px solid var(--primary-red);
+    }
+
+    .cart-hero h1 {
+        font-size: 3.5rem;
+        margin-bottom: 15px;
+        font-family: var(--font-display);
+    }
+
+    .cart-hero h1 .highlight {
+        color: var(--primary-red);
+    }
+
+    .cart-container {
+        padding: 60px 0 100px;
+    }
+
+    .first-order-banner {
+        background: linear-gradient(135deg, rgba(255, 102, 0, 0.2) 0%, rgba(255, 215, 0, 0.2) 100%);
+        border: 2px solid var(--primary-orange);
+        border-radius: var(--card-radius);
+        padding: 20px 30px;
+        margin-bottom: 40px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .first-order-banner i {
+        font-size: 2.5rem;
+        color: var(--primary-orange);
+    }
+
+    .first-order-banner strong {
+        color: var(--text-white);
+        font-size: 1.1rem;
+    }
+
+    .cart-grid {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 30px;
+    }
+
+    .cart-items {
+        background: var(--gradient-card);
+        border-radius: var(--card-radius);
+        padding: 30px;
+        border: 1px solid var(--medium-grey);
+    }
+
+    .cart-item {
+        display: grid;
+        grid-template-columns: 100px 1fr auto auto auto;
+        gap: 20px;
+        padding: 20px 0;
+        border-bottom: 1px solid var(--medium-grey);
+        align-items: center;
+    }
+
+    .cart-item:last-child {
+        border-bottom: none;
+    }
+
+    .cart-item-image {
+        width: 100px;
+        height: 100px;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        background: var(--dark-grey);
+        border: 2px solid var(--primary-red);
+    }
+
+    .cart-item-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .cart-item-image-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, var(--primary-red) 0%, var(--dark-red) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 2rem;
+    }
+
+    .cart-item-info h4 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: var(--text-white);
+        font-family: var(--font-heading);
+    }
+
+    .cart-item-info .meta {
+        font-size: 0.9rem;
+        color: var(--text-grey);
+    }
+
+    .cart-quantity {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .quantity-btn {
+        width: 35px;
+        height: 35px;
+        background: var(--gradient-red);
+        border: none;
+        border-radius: var(--border-radius);
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .quantity-btn:hover {
+        box-shadow: var(--glow-red);
+        transform: scale(1.1);
+    }
+
+    .quantity-input {
+        width: 60px;
+        height: 35px;
+        background: var(--dark-grey);
+        border: 2px solid var(--medium-grey);
+        border-radius: var(--border-radius);
+        color: var(--text-white);
+        text-align: center;
+        font-weight: 600;
+    }
+
+    .quantity-input:focus {
+        outline: none;
+        border-color: var(--primary-red);
+    }
+
+    .cart-item-price {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--primary-red);
+        font-family: var(--font-display);
+        min-width: 120px;
+        text-align: right;
+    }
+
+    .delete-btn {
+        background: transparent;
+        border: 1px solid var(--primary-red);
+        color: var(--primary-red);
+        width: 40px;
+        height: 40px;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .delete-btn:hover {
+        background: var(--primary-red);
+        color: white;
+    }
+
+    .cart-summary {
+        background: var(--gradient-card);
+        border-radius: var(--card-radius);
+        padding: 30px;
+        border: 1px solid var(--medium-grey);
+        height: fit-content;
+        position: sticky;
+        top: 100px;
+    }
+
+    .checkout-btn {
+        width: 100%;
+        padding: 18px;
+        background: var(--gradient-red);
+        border: none;
+        border-radius: var(--border-radius);
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .checkout-btn:hover {
+        box-shadow: var(--glow-red);
+        transform: translateY(-2px);
+    }
+
+    .free-badge {
+        background: var(--gradient-gold);
+        color: var(--primary-black);
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        margin-left: 10px;
+    }
+
+    /* Modal + backdrop forcés */
+    .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.65) !important;
+        z-index: 1040 !important;
+        opacity: 1 !important;
+    }
+
+    .modal {
+        z-index: 1055 !important;
+    }
+
+    body.modal-open {
+        overflow: hidden;
+        padding-right: 0 !important;
+    }
+
+    #confirmModal {
+        display: none !important;
+    }
+
+    #confirmModal.show {
+        display: block !important;
+    }
+
+    .modal-content {
+        background: var(--gradient-card);
+        border: 2px solid var(--primary-red);
+        border-radius: var(--card-radius);
+    }
+
+    .modal-header {
+        background: var(--gradient-red);
+        border-bottom: none;
+        padding: 20px 30px;
+    }
+
+    .modal-title {
+        color: white;
+        font-weight: 700;
+        font-family: var(--font-heading);
+    }
+
+    .modal-body {
+        padding: 30px;
+    }
+
+    .modal-product-image {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: var(--border-radius);
+        border: 1px solid var(--medium-grey);
+    }
+
+    .modal-product-placeholder {
+        width: 50px;
+        height: 50px;
+        background: var(--dark-grey);
+        border-radius: var(--border-radius);
+        color: var(--text-grey);
+    }
+
+    .modal-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+    }
+
+    .modal-table th {
+        background: var(--dark-grey);
+        padding: 12px;
+        text-align: left;
+        color: var(--text-white);
+        font-weight: 600;
+        border-bottom: 2px solid var(--primary-red);
+    }
+
+    .modal-table td {
+        padding: 12px;
+        border-bottom: 1px solid var(--medium-grey);
+        color: var(--text-white);
+    }
+
+    .modal-table tfoot th {
+        background: var(--dark-grey);
+        border-top: 2px solid var(--primary-red);
+    }
+
+    .address-input {
+        width: 100%;
+        padding: 12px;
+        background: var(--dark-grey);
+        border: 2px solid var(--medium-grey);
+        border-radius: var(--border-radius);
+        color: var(--text-white);
+        font-size: 1rem;
+        margin-top: 10px;
+    }
+
+    .address-input:focus {
+        outline: none;
+        border-color: var(--primary-red);
+    }
+
+    .modal-footer {
+        background: var(--dark-grey);
+        border-top: 1px solid var(--medium-grey);
+        padding: 20px 30px;
+    }
+
+    @media (max-width: 968px) {
+        .cart-grid {
+            grid-template-columns: 1fr;
+        }
+        .cart-summary {
+            position: static;
+        }
+        .cart-item {
+            grid-template-columns: 80px 1fr;
+            gap: 15px;
+        }
+        .cart-item-image { width: 80px; height: 80px; }
+        .cart-quantity, .cart-item-price, .delete-btn {
+            grid-column: 2;
+            justify-self: start;
+            margin-top: 10px;
+        }
+        .cart-hero h1 {
+            font-size: 2.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero avec trait en bas comme la page blog -->
+<div class="cart-hero">
+    <div class="container">
+        <h1>Mon <span class="highlight">Panier</span></h1>
+    </div>
+</div>
+
+<section class="cart-container">
+    <div class="container">
+        {% if not panier_produits %}
+        <div class="empty-cart text-center py-5">
+            <i class="fas fa-shopping-cart" style="font-size: 5rem; opacity: 0.5;"></i>
+            <h3 class="mt-4">Votre panier est vide</h3>
+            <a href="{% url 'boutique:index' %}" class="btn btn-primary mt-4">
+                <i class="fas fa-shopping-bag me-2"></i> Commencer vos achats
+            </a>
+        </div>
+        {% else %}
+        {% if est_premier_achat %}
+        <div class="first-order-banner">
+            <i class="fas fa-gift"></i>
+            <div>
+                <strong>Félicitations !</strong><br>
+                Pour votre première commande, <strong>la livraison est offerte</strong> 🎉
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="cart-grid">
+            <div class="cart-items">
+                {% for item in panier_produits %}
+                <div class="cart-item">
+                    <div class="cart-item-image">
+                        {% if item.produit.image %}
+                        <img src="{{ item.produit.image.url }}" alt="{{ item.produit.nom }}">
+                        {% else %}
+                        <div class="cart-item-image-placeholder">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="cart-item-info">
+                        <h4>{{ item.produit.nom }}</h4>
+                        <div class="meta">
+                            Prix unitaire: {{ item.unit_price|floatformat:0 }} XOF
+                        </div>
+                    </div>
+
+                    <div class="cart-quantity">
+                        <form method="post" action="{% url 'boutique:maj_ligne_panier' item.id %}"
+                              style="display: flex; align-items: center; gap: 10px;">
+                            {% csrf_token %}
+                            <button type="button" class="quantity-btn" onclick="decreaseQuantity(this, 1)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="number" name="quantite" class="quantity-input" value="{{ item.quantite }}"
+                                   min="1" max="{{ item.produit.stock }}" onchange="this.form.submit()">
+                            <button type="button" class="quantity-btn"
+                                    onclick="increaseQuantity(this, {{ item.produit.stock }})">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="cart-item-price">
+                        {{ item.line_total|floatformat:0 }} XOF
+                    </div>
+
+                    <form method="post" action="{% url 'boutique:supprimer_ligne_panier' item.id %}"
+                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet article ?');">
+                        {% csrf_token %}
+                        <button type="submit" class="delete-btn" title="Supprimer">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="cart-summary">
+                <button type="button" class="checkout-btn w-100"
+                        data-bs-toggle="modal"
+                        data-bs-target="#confirmModal">
+                    <i class="fas fa-credit-card"></i>
+                    Passer la commande
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true" 
+             data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-receipt"></i> Résumé de votre commande
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        {% if est_premier_achat %}
+                        <div class="first-order-banner" style="margin-bottom: 25px;">
+                            <i class="fas fa-gift"></i>
+                            <div>
+                                <strong>Livraison offerte pour votre première commande !</strong>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <table class="modal-table">
+                            <thead>
+                                <tr>
+                                    <th>Produit</th>
+                                    <th>Qté</th>
+                                    <th>P.U.</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in panier_produits %}
+                                <tr>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            {% if item.produit.image %}
+                                            <img src="{{ item.produit.image.url }}" alt="{{ item.produit.nom }}" class="modal-product-image">
+                                            {% else %}
+                                            <div class="modal-product-placeholder">
+                                                <i class="fas fa-image"></i>
+                                            </div>
+                                            {% endif %}
+                                            <span>{{ item.produit.nom }}</span>
+                                        </div>
+                                    </td>
+                                    <td>{{ item.quantite }}</td>
+                                    <td>{{ item.unit_price|floatformat:0 }} XOF</td>
+                                    <td><strong>{{ item.line_total|floatformat:0 }} XOF</strong></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3" style="text-align: right;">Sous-total produits</th>
+                                    <th>{{ total|floatformat:0 }} XOF</th>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" style="text-align: right;">
+                                        <i class="fas fa-truck"></i> Frais de livraison
+                                        {% if est_premier_achat %}
+                                        <span class="free-badge">OFFERTE</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>
+                                            {% if est_premier_achat %}
+                                            <span style="color: var(--primary-orange);">0 XOF</span>
+                                            {% else %}
+                                            1 000 XOF
+                                            {% endif %}
+                                        </strong>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th colspan="3" style="text-align: right; font-size: 1.3rem;">Total à payer</th>
+                                    <th style="font-size: 1.5rem; color: var(--primary-red);">
+                                        {{ total_avec_livraison|floatformat:0 }} XOF
+                                    </th>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <hr style="border-color: var(--medium-grey); margin: 25px 0;">
+
+                        <form id="modalOrderForm" method="post" action="{% url 'boutique:passer_commande' %}">
+                            {% csrf_token %}
+                            <label for="adresse_livraison"
+                                   style="color: var(--text-white); font-weight: 600; margin-bottom: 10px; display: block;">
+                                <i class="fas fa-map-marker-alt"></i> Lieu de livraison <span style="color: var(--primary-red);">*</span>
+                            </label>
+                            <input type="text" name="adresse_livraison" id="adresse_livraison" class="address-input"
+                                   placeholder="Ex: Cocody, Angré 8ème tranche, près de la pharmacie" required>
+                            <small style="color: var(--text-grey); margin-top: 8px; display: block;">
+                                {% if est_premier_achat %}
+                                <i class="fas fa-check-circle" style="color: var(--primary-orange);"></i>
+                                <strong>Livraison gratuite pour cette commande !</strong>
+                                {% else %}
+                                <i class="fas fa-info-circle"></i>
+                                Frais de livraison: 1 000 XOF (offerte sur la première commande)
+                                {% endif %}
+                            </small>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" form="modalOrderForm" class="checkout-btn" style="width: auto; margin: 0;">
+                            <i class="fas fa-credit-card"></i> Payer la commande
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Test console Bootstrap
+    console.log("Bootstrap JS chargé ?", typeof bootstrap !== 'undefined');
+
+    function decreaseQuantity(btn, min = 1) {
+        const form = btn.closest('form');
+        const input = form.querySelector('input[name="quantite"]');
+        let value = parseInt(input.value) || min;
+        if (value > min) {
+            value--;
+            input.value = value;
+            form.submit();
+        }
+    }
+
+    function increaseQuantity(btn, max) {
+        const form = btn.closest('form');
+        const input = form.querySelector('input[name="quantite"]');
+        let value = parseInt(input.value) || 1;
+        if (value < max) {
+            value++;
+            input.value = value;
+            form.submit();
+        }
+    }
+
+    document.getElementById('modalOrderForm')?.addEventListener('submit', function() {
+        const modalEl = document.getElementById('confirmModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+    });
+</script>
+{% endblock %}
