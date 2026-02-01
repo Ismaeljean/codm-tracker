@@ -37,7 +37,7 @@ DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 #    'ALLOWED_HOSTS',
 #    '127.0.0.1,localhost'
 #).split(',')
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["codm-tracker.onrender.com"]
 
 # Application definition
 
@@ -198,3 +198,15 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',  
     'allauth.account.auth_backends.AuthenticationBackend',  
 )
+
+
+# OAuth Google prod
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': os.environ.get('GOOGLE_CLIENT_ID'),
+            'secret': os.environ.get('GOOGLE_CLIENT_SECRET'),
+            'key': ''
+        }
+    }
+}
