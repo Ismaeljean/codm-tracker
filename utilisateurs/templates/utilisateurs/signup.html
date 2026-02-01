@@ -99,15 +99,17 @@
                 <i class="fas fa-check"></i>
                 Créer mon compte
             </button>
-            
-            <form method="POST" action="{% url 'utilisateurs:resend_otp' %}" style="margin-top: 10px;">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-secondary" style="width: 100%;">
-                    <i class="fas fa-redo"></i>
-                    Renvoyer le code
-                </button>
-            </form>
         </form>
+
+        <!-- Formulaire séparé pour renvoyer le code -->
+        <form method="POST" action="{% url 'utilisateurs:resend_otp' %}" style="margin-top: 10px;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary" style="width: 100%;">
+                <i class="fas fa-redo"></i>
+                Renvoyer le code
+            </button>
+        </form>
+
         {% endif %}
         
         <div class="auth-footer">

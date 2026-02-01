@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = 'profile.html';
         });
     }
-
+    /*
     const socialBtns = document.querySelectorAll('.btn-social');
     socialBtns.forEach(btn => {
         btn.addEventListener('click', function() {
@@ -101,6 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert(`Connexion avec ${provider} - Fonctionnalité simulée`);
         });
     });
+    */
 
     const observerOptions = {
         threshold: 0.1,
