@@ -33,11 +33,11 @@ DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 # DEBUG = True
 
-ALLOWED_HOSTS = os.getenv(
-    'ALLOWED_HOSTS',
-    '127.0.0.1,localhost'
-).split(',')
-
+#ALLOWED_HOSTS = os.getenv(
+#    'ALLOWED_HOSTS',
+#    '127.0.0.1,localhost'
+#).split(',')
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -63,6 +63,7 @@ MIDDLEWARE = [
     'CODMTracker.middleware.Custom500Middleware',  # ← en dernier !
 
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -138,6 +139,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
@@ -164,3 +167,4 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'no-reply@codmtracker.com')
 
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
