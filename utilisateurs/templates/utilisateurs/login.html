@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load socialaccount %} {# nécessaire pour {% provider_login_url 'google' %} #}
 
 {% block title %}Connexion - CODM Tracker{% endblock %}
 
@@ -16,14 +17,10 @@
         </div>
         
         <div class="social-buttons">
-            <button class="btn-social btn-google">
+            <a href="{% provider_login_url 'google' %}" class="btn-social btn-google">
                 <i class="fab fa-google"></i>
                 Continuer avec Google
-            </button>
-            <button class="btn-social btn-discord">
-                <i class="fab fa-discord"></i>
-                Continuer avec Discord
-            </button>
+            </a>
         </div>
         
         <div class="auth-divider">

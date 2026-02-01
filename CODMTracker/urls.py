@@ -21,6 +21,8 @@ urlpatterns = [
     path('profils/', include('profils.urls')),
     path('boutique/', include('boutique.urls')),
     path('forum/', include('forum.urls')),
+    path('accounts/', include('allauth.urls')),
+
 ]
 
 # Gestion des erreurs personnalisées

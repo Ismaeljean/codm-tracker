@@ -11,3 +11,6 @@ urllib3==2.6.3
 gunicorn
 whitenoise
 psycopg2-binary
+django-allauth
+PyJWT
+cryptography
